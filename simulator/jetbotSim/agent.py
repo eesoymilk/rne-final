@@ -1,19 +1,24 @@
 import sys
 
 sys.path.append('./jetbotSim')
-import numpy as np
 import cv2
-import websocket
-from websocket import create_connection
-import threading
-import time
-import config
+import torch
+import torch.nn as nn
+import numpy as np
 
 
 class Agent:
-    def __init__(self, env, robot):
+    def __init__(self, env, robot, device="cpu"):
         self.env = env
         self.robot = robot
+        self.device = device
+        self.net: nn.Module = torch.hub.load(
+            'milesial/Pytorch-UNet',
+            'unet_carvana',
+            pretrained=True,
+            scale=0.5,
+        )
+        self.net.to(device)
         self.frames = 0
 
     def step(self, action):
@@ -27,6 +32,10 @@ class Agent:
     def execute(self, obs):
         self.frames += 1
         img = obs["img"]
+        out = self.net(
+            torch.tensor(img).permute(2, 0, 1).unsqueeze(0).float() / 255
+        )
+        print(out)
         # cv2.imwrite(f'test_img.png', img)
         reward = obs['reward']
         done = obs['done']

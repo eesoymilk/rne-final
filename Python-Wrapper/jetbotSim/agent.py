@@ -1,6 +1,8 @@
 import sys
 
 sys.path.append('./jetbotSim')
+
+import pickle
 import cv2
 import torch
 import torch.nn as nn
@@ -12,12 +14,26 @@ class Agent:
         self.env = env
         self.robot = robot
         self.device = device
-        self.net: nn.Module = torch.hub.load(
-            'milesial/Pytorch-UNet',
-            'unet_carvana',
-            pretrained=True,
-            scale=0.5,
-        )
+
+        if device == "cpu":
+            self.net: nn.Module = torch.hub.load(
+                'milesial/Pytorch-UNet',
+                'unet_carvana',
+                scale=0.5,
+            )
+            chkpt = torch.hub.load_state_dict_from_url(
+                "https://github.com/milesial/Pytorch-UNet/releases/download/v3.0/unet_carvana_scale0.5_epoch2.pth",
+                map_location='cpu',
+            )
+            self.net.load_state_dict(chkpt)
+        else:
+            self.net: nn.Module = torch.hub.load(
+                'milesial/Pytorch-UNet',
+                'unet_carvana',
+                pretrained=True,
+                scale=0.5,
+            )
+
         self.net.to(device)
         self.frames = 0
 
@@ -35,8 +51,9 @@ class Agent:
         out = self.net(
             torch.tensor(img, device=self.device).permute(2, 0, 1).unsqueeze(0).float() / 255
         )
-        print(f"    output shape: {out.shape}")
-        # cv2.imwrite(f'test_img.png', img)
+        cv2.imwrite(f'input1.png', img)
+        cv2.imwrite(f'output0.png', out[0, 0].detach().numpy())
+        cv2.imwrite(f'output1.png', out[0, 1].detach().numpy())
         reward = obs['reward']
         done = obs['done']
         if self.frames < 100:

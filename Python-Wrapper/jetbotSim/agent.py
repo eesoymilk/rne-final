@@ -33,9 +33,9 @@ class Agent:
         self.frames += 1
         img = obs["img"]
         out = self.net(
-            torch.tensor(img).permute(2, 0, 1).unsqueeze(0).float() / 255
+            torch.tensor(img, device=self.device).permute(2, 0, 1).unsqueeze(0).float() / 255
         )
-        print(out)
+        print(f"    output shape: {out.shape}")
         # cv2.imwrite(f'test_img.png', img)
         reward = obs['reward']
         done = obs['done']

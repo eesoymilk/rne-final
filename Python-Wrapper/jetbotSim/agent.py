@@ -46,11 +46,11 @@ class Agent:
         if action == 0:
             self.robot.set_motor(0.5, 0.5)
         elif action == 1:
-            self.robot.set_motor(0.2, 0.0)
+            self.robot.set_motor(0.1, 0.0)
         elif action == 2:
-            self.robot.set_motor(0.0, 0.2)
+            self.robot.set_motor(0.0, 0.1)
         elif action == 3:
-            self.robot.set_motor(-0.1, -0.1)
+            self.robot.set_motor(-0.2, -0.2)
         elif action == 4:
             self.robot.set_motor(-0.0, -0.0)
 
@@ -65,7 +65,7 @@ class Agent:
         cv2.imwrite(f'output1.png', out[0, 1].detach().cpu().numpy())
         reward = obs['reward']
         done = obs['done']
-        if self.frames < 1000 or not done:
+        if self.frames < 1000 and not done:
             # self.robot.left(10 if self.frames%4 else 0)
             # self.robot.forward(0 if self.frames%4 else 5)
             dir = b'w'

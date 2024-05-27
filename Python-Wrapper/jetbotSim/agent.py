@@ -1,13 +1,15 @@
 import sys
 
 sys.path.append('./jetbotSim')
+sys.path.append('.')
 
 import pickle
 import os
 if(os.name == 'nt'):
-    import msvcrt as getch
-else:
-    import getch
+#     import msvcrt
+# else:
+    from kbhit import KBHit
+    msvcrt = KBHit()
 import cv2
 import torch
 import torch.nn as nn
@@ -69,9 +71,8 @@ class Agent:
             # self.robot.left(10 if self.frames%4 else 0)
             # self.robot.forward(0 if self.frames%4 else 5)
             dir = b'w'
-            if(self.frames % 2):
-                dir = b'w'
-                dir = getch.getch()
+            if(msvcrt.kbhit()):
+                dir = msvcrt.getch()
             if(dir == b'w' or dir == 'w'):
                 print("Pressed w")
                 self.step(0)

@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+
+<html>
+   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+      <style>
+          .ctl-btn {
+              cursor: default;
+              user-select: none;
+          }
+          .ctn-btn-group {
+              display: grid;
+              grid-template-rows: 64px 64px;
+              grid-template-columns: 64px 64px 64px;
+              grid-template-areas: 
+              ". f t"
+              "l b r";
+          }
+          .sensor-value {
+              display: inline-block;
+              width: 10px;
+              height: 10px;
+              border-radius: 5px;
+          }
+      </style>
+   </head>
+   
+   <body>
+    <div id="sensor-data"></div>
+    <div class="ctn-btn-group">
+      
+      <div data-cmd="forward" class="ctl-btn w3-btn w3-ripple w3-blue" style="grid-area: f;"></div>
+      <div data-cmd="left" class="ctl-btn w3-btn w3-blue"  style="grid-area: l;"></div>
+      <div data-cmd="right" class="ctl-btn w3-btn w3-blue" style="grid-area: r;"></div>
+      <div data-cmd="backward" class="ctl-btn w3-btn w3-blue" style="grid-area: b;"></div>
+      <div data-cmd="takepic" class="ctl-btn w3-btn w3-red" style="grid-area: t;"></div>
+    </div>
+    <canvas width="256" height="256" id="canvas"></canvas>
+      <script type = "text/javascript">
+        let ws;
+        let ws_lidar;
+        let ws_image;
+        let sensordata = document.getElementById('sensor-data');
+        let canvas = document.getElementById('canvas');
+        screen.orientation.lock('landscape');
+        let color1 = d3.scaleLinear()
+                            .domain([1, 100])
+                            .range(['#ff0000', '#00ff00'])
+                            .interpolate(d3.interpolateHcl); //interpolateHsl interpolateHcl interpolateRgb
+
+        HTMLCanvasElement.prototype.renderImage = function(blob){
+        
+        var ctx = this.getContext('2d');
+        var img = new Image();
+
+        img.onload = function(){
+            ctx.drawImage(img, 0, 0, this.width, this.height)
+        }
+
+        img.src = window.URL.createObjectURL(blob);
+        };
+        const urlParams = new URLSearchParams(window.location.search);
+        const ip = urlParams.get('ip');
+        const actor = urlParams.get('actor');
+
+        window.onload = () => {
+           
+           if ("WebSocket" in window) {
+              console.log("WebSocket is supported by your Browser!");
+              
+              // Let us open a web socket
+              ws = new WebSocket(`ws://${ip}:9002/${actor}/controller/publish`);
+              ws_lidar = new WebSocket(`ws://${ip}:9002/${actor}/lidar/subscribe`);
+              ws_lidar.binaryType = 'arraybuffer'
+              ws_image = new WebSocket(`ws://${ip}:9002/${actor}/image/subscribe`);
+               
+
+              ws_lidar.onmessage = (data) => {
+                    const d = d3.select("#sensor-data").selectAll('div').data(new Float32Array(data.data));
+                    d.enter().append('div').classed('sensor-value', true).style('background-color', (d) => `${color1(d/4000.0*d/4000.0*100)}`);
+                    d.style('background-color', (d) => `${color1(d/4000.0*d/4000.0*100)}`);
+              };
+
+              ws_image.onmessage = (data) => {
+                canvas.renderImage(data.data);
+              }
+           }
+        }
+        
+        [].forEach.call(document.getElementsByClassName('ctl-btn'), (element) => {
+           element.ontouchstart = element.onmousedown = () => {
+               ws.send(element.dataset.cmd);
+           };
+           element.ontouchend = element.onmouseup = () => {
+               ws.send(element.dataset.cmd+"R");
+           };
+        });
+     </script>
+       
+   </body>
+</html>

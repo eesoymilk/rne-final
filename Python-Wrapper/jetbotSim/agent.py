@@ -3,6 +3,11 @@ import sys
 sys.path.append('./jetbotSim')
 
 import pickle
+import os
+if(os.name == 'nt'):
+    import msvcrt as getch
+else:
+    import getch
 import cv2
 import torch
 import torch.nn as nn
@@ -43,7 +48,11 @@ class Agent:
         elif action == 1:
             self.robot.set_motor(0.2, 0.0)
         elif action == 2:
-            self.robot.set_motor(0.0, 0.0)
+            self.robot.set_motor(0.0, 0.2)
+        elif action == 3:
+            self.robot.set_motor(-0.1, -0.1)
+        elif action == 4:
+            self.robot.set_motor(-0.0, -0.0)
 
     def execute(self, obs):
         self.frames += 1
@@ -52,16 +61,44 @@ class Agent:
             torch.tensor(img, device=self.device).permute(2, 0, 1).unsqueeze(0).float() / 255
         )
         cv2.imwrite(f'input1.png', img)
-        cv2.imwrite(f'output0.png', out[0, 0].detach().numpy())
-        cv2.imwrite(f'output1.png', out[0, 1].detach().numpy())
+        cv2.imwrite(f'output0.png', out[0, 0].detach().cpu().numpy())
+        cv2.imwrite(f'output1.png', out[0, 1].detach().cpu().numpy())
         reward = obs['reward']
         done = obs['done']
-        if self.frames < 100:
-            self.step(0)
+        if self.frames < 1000 or not done:
+            # self.robot.left(10 if self.frames%4 else 0)
+            # self.robot.forward(0 if self.frames%4 else 5)
+            dir = b'w'
+            if(self.frames % 2):
+                dir = b'w'
+                dir = getch.getch()
+            if(dir == b'w' or dir == 'w'):
+                print("Pressed w")
+                self.step(0)
+            elif(dir == b'd' or dir == 'd'):
+                print("Pressed d")
+                self.step(1)
+            elif(dir == b'a' or dir == 'a'):
+                print("Pressed a")
+                self.step(2)
+            elif(dir == b's' or dir == 's'):
+                print("Pressed s")
+                self.step(3)
+            elif(dir == b'p' or dir == 'p'):
+                print("Pressed p")
+                self.step(4)
+            elif(dir == b'q' or dir == 'q'):
+                exit()
+            else:
+                # print("none")
+                self.step(0)
+            # self.step(0)
         else:
             self.frames = 0
             self.robot.reset()
-        print(f'\rframes:{self.frames}, reward:{reward}, done:{done} ', end="")
+        print(f'\rframes:{self.frames}, reward:{reward}', end=" ")
+        if(done):
+            print(f'\r, done:{done}')
 
     def run(self):
         print("\n[Start Observation]")

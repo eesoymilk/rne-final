@@ -19,8 +19,9 @@ def main() -> None:
         map_location='cpu',
     )
     net.load_state_dict(chekpoint)
+    print(net)
 
-    img = np.array(PIL.Image.open('car.png'))
+    img = np.array(PIL.Image.open('car.jpg'))
     out = net(torch.tensor(img).permute(2, 0, 1).unsqueeze(0).float() / 255)
     print(out.shape)
     fig, ax = plt.subplots(1, 3, figsize=(10, 5))
@@ -34,9 +35,9 @@ def main() -> None:
 
     mask = out[0].detach().numpy()
     ax[2].imshow(img)
-    ax[2].imshow(mask[0], alpha=0.5, cmap='Reds')
+    ax[2].imshow(mask[0], alpha=0.5)
     ax[1].imshow(img)
-    ax[1].imshow(mask[1], alpha=0.5, cmap='Greens')
+    ax[1].imshow(mask[1], alpha=0.5)
     plt.tight_layout()
     plt.show()
 

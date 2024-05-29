@@ -1,16 +1,19 @@
 import sys
 
-sys.path.append('./jetbotSim')
-import numpy as np
+sys.path.append('.')
+
+import time
+import json
+import threading
+
 import cv2
 import websocket
-from websocket import create_connection
-import threading
-import time
-import config
-import json
-
+import numpy as np
 import numpy.typing as npt
+
+import config
+
+SocketResponse = tuple[npt.NDArray[np.uint8], int, bool]
 
 
 class Env:
@@ -37,21 +40,20 @@ class Env:
         self.ws = websocket.WebSocketApp(
             "ws://%s/%s/camera/subscribe" % (ip, actor),
             on_message=self._on_message_env,
-            # on_message=lambda ws, msg: self._on_message_env(ws, msg),
-        )
-        self.command_ws = create_connection(
-            "ws://%s/%s/controller/session" % (ip, actor)
         )
         self.wst = threading.Thread(target=self.ws.run_forever)
         self.wst.daemon = True
         self.wst.start()
+        self.command_ws = websocket.create_connection(
+            "ws://%s/%s/controller/session" % (ip, actor)
+        )
         time.sleep(1)
 
     def _on_message_env(self, ws, msg):
         self.buffer = msg
         self.on_change = True
 
-    def read_socket(self) -> tuple[npt.NDArray[np.uint8], int, bool]:
+    def read_socket(self) -> SocketResponse:
         while True:
             if self.buffer is not None and self.on_change:
                 nparr = np.fromstring(self.buffer[5:], np.uint8)
@@ -69,58 +71,46 @@ class Env:
 
     def send_command(
         self,
-        left_value: float,
-        right_value: float,
-        flag: int,
-    ) -> tuple[npt.NDArray[np.uint8], int, bool]:
+        *,
+        left_value: float = 0.0,
+        right_value: float = 0.0,
+        reset: bool = False,
+    ) -> SocketResponse:
         jsonStr = json.dumps(
-            {'leftMotor': left_value, 'rightMotor': right_value, 'flag': flag}
+            {'leftMotor': left_value, 'rightMotor': right_value, 'reset': reset}
         )
         self.command_ws.send(jsonStr)
         return self.read_socket()
 
-    def set_left_motor(self, value):
-        left_ang = self._move_to_wheel(value)
-        self.send_command(left_ang, 0.0, 1)
-
-    def set_right_motor(self, value):
-        right_ang = self._move_to_wheel(value)
-        self.send_command(0.0, right_ang, 2)
-
-    def set_motor(self, value_l, value_r):
+    def set_motor(self, value_l, value_r) -> SocketResponse:
         left_ang = self._move_to_wheel(value_l)
         right_ang = self._move_to_wheel(value_r)
-        return self.send_command(left_ang, right_ang, 4)
+        return self.send_command(left_value=left_ang, right_value=right_ang)
 
-    def add_motor(self, value_l, value_r):
-        left_ang = self._move_to_wheel(value_l)
-        right_ang = self._move_to_wheel(value_r)
-        self.send_command(left_ang, right_ang, 3)
-
-    def forward(self, value):
+    def forward(self, value) -> SocketResponse:
         ang = self._move_to_wheel(value)
-        self.send_command(ang, ang, 4)
+        return self.send_command(left_value=ang, right_value=ang)
 
-    def backward(self, value):
+    def backward(self, value) -> SocketResponse:
         ang = self._move_to_wheel(value)
-        self.send_command(-ang, -ang, 4)
+        return self.send_command(left_value=-ang, right_value=-ang)
 
-    def left(self, value):
+    def left(self, value) -> SocketResponse:
         ang = self._move_to_wheel(value)
-        self.send_command(-ang, ang, 4)
+        return self.send_command(left_value=-ang, right_value=ang)
 
-    def right(self, value):
+    def right(self, value) -> SocketResponse:
         ang = self._move_to_wheel(value)
-        self.send_command(ang, -ang, 4)
+        return self.send_command(left_value=ang, right_value=-ang)
 
-    def step(self, action: int) -> tuple[npt.NDArray[np.uint8], int, bool]:
+    def stop(self) -> SocketResponse:
+        return self.send_command()
+
+    def step(self, action: int) -> SocketResponse:
         try:
             return self.set_motor(*self.ACTIONS[action]["motor_speed"])
         except KeyError:
             raise ValueError(f"Invalid action: {action}")
 
-    def stop(self) -> tuple[npt.NDArray[np.uint8], int, bool]:
-        return self.send_command(0.0, 0.0, 4)
-
-    def reset(self) -> tuple[npt.NDArray[np.uint8], int, bool]:
-        return self.send_command(0.0, 0.0, 4)
+    def reset(self) -> SocketResponse:
+        return self.send_command(reset=True)

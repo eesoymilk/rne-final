@@ -1,14 +1,11 @@
-import os
+import sys
 
-if os.name == 'nt':
-    import msvcrt as getch
-else:
-    import getch
+sys.path.append('./jetbotSim')
 
-import abc
-from random import randint
-from typing import Optional
-
+import pickle
+import os, cv2
+from kbhit import KBHit
+msvcrt = KBHit()
 import torch
 import torchvision
 import torch.nn as nn
@@ -34,9 +31,56 @@ class BaseAgent:
     ):
         pass
 
+<<<<<<< Updated upstream
     @abc.abstractmethod
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
         pass
+=======
+    def execute(self, obs):
+        self.frames += 1
+        img = obs["img"]
+        out = self.net(
+            torch.tensor(img, device=self.device).permute(2, 0, 1).unsqueeze(0).float() / 255
+        )
+        cv2.imwrite(f'input1.png', img)
+        cv2.imwrite(f'output0.png', out[0, 0].detach().cpu().numpy())
+        cv2.imwrite(f'output1.png', out[0, 1].detach().cpu().numpy())
+        reward = obs['reward']
+        done = obs['done']
+        if self.frames < 1000 and not done:
+            # self.robot.left(10 if self.frames%4 else 0)
+            # self.robot.forward(0 if self.frames%4 else 5)
+            dir = b'w'
+            if(msvcrt.kbhit()):
+                dir = msvcrt.getch()
+            if(dir == b'w' or dir == 'w'):
+                print("Pressed w")
+                self.step(0)
+            elif(dir == b'd' or dir == 'd'):
+                print("Pressed d")
+                self.step(1)
+            elif(dir == b'a' or dir == 'a'):
+                print("Pressed a")
+                self.step(2)
+            elif(dir == b's' or dir == 's'):
+                print("Pressed s")
+                self.step(3)
+            elif(dir == b'p' or dir == 'p'):
+                print("Pressed p")
+                self.step(4)
+            elif(dir == b'q' or dir == 'q'):
+                exit()
+            else:
+                # print("none")
+                self.step(0)
+            # self.step(0)
+        else:
+            self.frames = 0
+            self.robot.reset()
+        print(f'\rframes:{self.frames}, reward:{reward}', end=" ")
+        if(done):
+            print(f'\r, done:{done}')
+>>>>>>> Stashed changes
 
     def run(self, episodes: int = 100):
         print("\n[Start Observation]")

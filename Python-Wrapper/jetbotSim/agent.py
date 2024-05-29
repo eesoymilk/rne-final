@@ -18,7 +18,6 @@ import torch.nn as nn
 import numpy as np
 import numpy.typing as npt
 
-from robot import Robot
 from environment import Env
 
 

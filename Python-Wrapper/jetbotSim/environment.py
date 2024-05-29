@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append('.')
-
 import time
 import json
 import threading
@@ -11,18 +7,26 @@ import websocket
 import numpy as np
 import numpy.typing as npt
 
-import config
+from jetbotSim import config
 
 SocketResponse = tuple[npt.NDArray[np.uint8], int, bool]
 
 
 class Env:
+    FORWARD_SPEED = 0.5
+    TURN_SPEED = 0.1
     ACTIONS = {
-        0: {"name": "forward", "motor_speed": (0.5, 0.5)},
-        1: {"name": "right", "motor_speed": (0.2, 0)},
-        2: {"name": "left", "motor_speed": (0, 0.2)},
-        3: {"name": "backward", "motor_speed": (-0.2, -0.2)},
-        4: {"name": "stop", "motor_speed": (0, 0)},
+        0: {
+            "name": "forward",
+            "motor_speed": (FORWARD_SPEED, FORWARD_SPEED),
+        },
+        1: {"name": "left", "motor_speed": (0, TURN_SPEED)},
+        2: {"name": "right", "motor_speed": (TURN_SPEED, 0)},
+        3: {
+            "name": "backward",
+            "motor_speed": (-FORWARD_SPEED, -FORWARD_SPEED),
+        },
+        # 4: {"name": "stop", "motor_speed": (0, 0)}, # Deprecated
     }
 
     def __init__(self):

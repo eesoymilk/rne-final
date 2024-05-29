@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append('.')
-
 import os
 
 if os.name == 'nt':
@@ -14,22 +10,15 @@ from random import randint
 from typing import Optional
 
 import torch
+import torchvision
 import torch.nn as nn
 import numpy as np
 import numpy.typing as npt
 
-from environment import Env
+from jetbotSim import Env
 
 
 class BaseAgent:
-    ACTIONS = {
-        0: {"name": "forward", "motor_speed": (0.5, 0.5)},
-        1: {"name": "right", "motor_speed": (0.2, 0)},
-        2: {"name": "left", "motor_speed": (0, 0.2)},
-        3: {"name": "backward", "motor_speed": (-0.2, -0.2)},
-        4: {"name": "stop", "motor_speed": (0, 0)},
-    }
-
     def __init__(self, env: Env):
         self.env = env
         self.frames = 0
@@ -75,7 +64,7 @@ class BaseAgent:
 
 
 class Agent(BaseAgent):
-    """This agent utilizes a pre-trained U-Net model to segment the image and determine the action to take."""
+    """This agent utilizes a pre-trained ResNet18 model to predict the action to take."""
 
     def __init__(self, env: Env, device: Optional[str] = None):
         super().__init__(env)
@@ -83,35 +72,10 @@ class Agent(BaseAgent):
         if device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        if self.device == "cpu":
-            # Manually load the model and checkpoint since torch.hub.load does not work on CPU
-            self.net: nn.Module = torch.hub.load(
-                'milesial/Pytorch-UNet',
-                'unet_carvana',
-                scale=0.5,
-            )
-            chkpt = torch.hub.load_state_dict_from_url(
-                "https://github.com/milesial/Pytorch-UNet/releases/download/v3.0/unet_carvana_scale0.5_epoch2.pth",
-                map_location='cpu',
-            )
-            self.net.load_state_dict(chkpt)
-        else:
-            self.net: nn.Module = torch.hub.load(
-                'milesial/Pytorch-UNet',
-                'unet_carvana',
-                pretrained=True,
-                scale=0.5,
-            )
+        self.net = torchvision.models.resnet18(weights='DEFAULT')
         self.net.to(self.device)
 
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
-        segmented_obs = self.net(
-            torch.tensor(obs, device=self.device)
-            .permute(2, 0, 1)
-            .unsqueeze(0)
-            .float()
-            / 255
-        )
         # return randint for now, will work on model later
         return randint(0, 4)
 
@@ -128,9 +92,9 @@ class HumanAgent(BaseAgent):
 
             if key == 'w':
                 return 0
-            elif key == 'd':
-                return 1
             elif key == 'a':
+                return 1
+            elif key == 'd':
                 return 2
             elif key == 's':
                 return 3

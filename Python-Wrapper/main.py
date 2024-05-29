@@ -1,5 +1,11 @@
+import sys
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.append(str(SCRIPT_DIR.parent))
+
 import torch
-from jetbotSim import Robot, Env, HumanAgent
+from jetbotSim import Env, HumanAgent
 
 
 def main() -> None:

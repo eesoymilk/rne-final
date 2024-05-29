@@ -31,11 +31,10 @@ class BaseAgent:
     ):
         pass
 
-<<<<<<< Updated upstream
     @abc.abstractmethod
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
         pass
-=======
+
     def execute(self, obs):
         self.frames += 1
         img = obs["img"]
@@ -80,7 +79,6 @@ class BaseAgent:
         print(f'\rframes:{self.frames}, reward:{reward}', end=" ")
         if(done):
             print(f'\r, done:{done}')
->>>>>>> Stashed changes
 
     def run(self, episodes: int = 100):
         print("\n[Start Observation]")

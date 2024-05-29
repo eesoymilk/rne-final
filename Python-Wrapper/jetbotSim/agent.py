@@ -31,46 +31,55 @@ class BaseAgent:
         4: {"name": "stop", "motor_speed": (0, 0)},
     }
 
-    def __init__(self, env: Env, robot: Robot):
+    def __init__(self, env: Env):
         self.env = env
-        self.robot = robot
         self.frames = 0
+
+    @abc.abstractmethod
+    def learn(
+        self,
+        obs: npt.NDArray[np.uint8],
+        action: int,
+        reward: int,
+        next_obs: npt.NDArray[np.uint8],
+        done: bool,
+    ):
+        pass
 
     @abc.abstractmethod
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
         pass
 
-    def step(self, action: int):
-        try:
-            self.robot.set_motor(*self.ACTIONS[action]["motor_speed"])
-        except KeyError:
-            raise ValueError(f"Invalid action: {action}")
-
-    def run(self):
+    def run(self, episodes: int = 100):
         print("\n[Start Observation]")
-        self.robot.reset()
-        while True:
-            obs, reward, done = self.env.read_socket()
-            frame_text = f'frames:{self.frames}, reward:{reward}'
 
-            if not done:
-                self.frames += 1
+        for ep in range(episodes):
+            self.frames = 0
+            obs, _, _ = self.env.reset()
+            while True:
                 action = self.get_action(obs)
-                frame_text = f"{frame_text}, action:{action}"
-                self.step(action)
-            else:
-                self.frames = 0
-                frame_text = f"{frame_text}, done:{done}"
-                self.robot.reset()
+                next_obs, reward, done = self.env.step(action)
+                self.learn(obs, action, reward, next_obs, done)
+                frame_text = f'frames:{self.frames}, reward:{reward}'
 
-            print(f"\r{frame_text}")
+                if done:
+                    frame_text = f"{frame_text}, done:{done}"
+                    print(f"\r{frame_text}")
+                    break
+
+                self.frames += 1
+                obs = next_obs
+                frame_text = f"{frame_text}, action:{action}"
+                print(f"\r{frame_text}")
+
+            print(f"\n[Episode {ep + 1}/{episodes}]")
 
 
 class Agent(BaseAgent):
     """This agent utilizes a pre-trained U-Net model to segment the image and determine the action to take."""
 
-    def __init__(self, env: Env, robot: Robot, device: Optional[str] = None):
-        super().__init__(env, robot)
+    def __init__(self, env: Env, device: Optional[str] = None):
+        super().__init__(env)
 
         if device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -110,8 +119,8 @@ class Agent(BaseAgent):
 
 class HumanAgent(BaseAgent):
 
-    def __init__(self, env: Env, robot: Robot):
-        super().__init__(env, robot)
+    def __init__(self, env: Env):
+        super().__init__(env)
         self.stdscr = None
 
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:

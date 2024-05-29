@@ -106,7 +106,7 @@ class Agent:
             if self.env.buffer is not None and self.env.on_change:
                 nparr = np.fromstring(self.env.buffer[5:], np.uint8)
                 img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                reward = int.from_bytes(self.env.buffer[:4], 'little')
+                reward = int.from_bytes(self.env.buffer[:4], 'little', signed=True)
                 done = bool.from_bytes(self.env.buffer[4:5], 'little')
                 self.execute(
                     {"img": img.copy(), "reward": reward, "done": done}

@@ -23,46 +23,47 @@ from environment import Env
 
 
 class BaseAgent:
+    ACTIONS = {
+        0: {"name": "forward", "motor_speed": (0.5, 0.5)},
+        1: {"name": "right", "motor_speed": (0.2, 0)},
+        2: {"name": "left", "motor_speed": (0, 0.2)},
+        3: {"name": "backward", "motor_speed": (-0.2, -0.2)},
+        4: {"name": "stop", "motor_speed": (0, 0)},
+    }
+
     def __init__(self, env: Env, robot: Robot):
         self.env = env
         self.robot = robot
         self.frames = 0
-        self.frame_text: str = ""
 
     @abc.abstractmethod
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
         pass
 
-    def step(self, action):
-        if action == 0:
-            self.robot.set_motor(0.5, 0.5)
-        elif action == 1:
-            self.robot.set_motor(0.2, 0)
-        elif action == 2:
-            self.robot.set_motor(0, 0.2)
-        elif action == 3:
-            self.robot.set_motor(-0.2, -0.2)
-        elif action == 4:
-            self.robot.set_motor(0, 0)
+    def step(self, action: int):
+        try:
+            self.robot.set_motor(*self.ACTIONS[action]["motor_speed"])
+        except KeyError:
+            raise ValueError(f"Invalid action: {action}")
 
     def run(self):
         print("\n[Start Observation]")
-
         self.robot.reset()
         while True:
             obs, reward, done = self.env.read_socket()
-            self.frame_text = f'frames:{self.frames}, reward:{reward}'
+            frame_text = f'frames:{self.frames}, reward:{reward}'
+
             if not done:
                 self.frames += 1
                 action = self.get_action(obs)
-                self.frame_text = f"{self.frame_text}, action:{action}"
+                frame_text = f"{frame_text}, action:{action}"
                 self.step(action)
             else:
                 self.frames = 0
-                self.frame_text = f"{self.frame_text}, done:{done}"
+                frame_text = f"{frame_text}, done:{done}"
                 self.robot.reset()
 
-            print(f"\r{self.frame_text}")
+            print(f"\r{frame_text}")
 
 
 class Agent(BaseAgent):

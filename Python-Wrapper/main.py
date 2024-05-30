@@ -18,16 +18,16 @@ def main() -> None:
         )
         save_dir.mkdir(parents=True, exist_ok=True)
         env = Env()
-        human_agent = HumanAgent(env)
-        human_agent.run()
-        # agent = Agent(
-        #     env,
-        #     obs_dim=(84, 84),
-        #     action_dim=4,
-        #     save_dir=save_dir,
-        #     device=device,
-        # )
-        # agent.train()
+        # human_agent = HumanAgent(env)
+        # human_agent.run()
+        agent = Agent(
+            env,
+            obs_dim=(84, 84),
+            action_dim=4,
+            save_dir=save_dir,
+            device=device,
+        )
+        agent.train()
     except KeyboardInterrupt:
         print("\n[Exit]")
 

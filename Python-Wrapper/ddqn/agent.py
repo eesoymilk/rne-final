@@ -293,7 +293,7 @@ class Agent(BaseAgent):
                 msg = [
                     f"============ Episode {episode + 1} ============",
                     f"Steps: {current_step}",
-                    f"Episode Steps: {episode_steps}"
+                    f"Episode Steps: {episode_steps}",
                     f"Reward: {episode_reward:.2f}",
                 ]
                 if qs and losses:

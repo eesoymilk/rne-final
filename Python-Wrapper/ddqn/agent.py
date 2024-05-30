@@ -270,7 +270,7 @@ class Agent(BaseAgent):
         return (td_est.mean().item(), loss)
 
     def train(self, n_steps: int = 50_000_001):
-        episode, episode_steps, episode_reward = 0, 0, 0.0
+        episode, episode_steps, episode_reward = 0, 0, 0
         qs, losses = [], []
         obs, _, _ = self.env.reset()
         obs = self.preprocess(obs)
@@ -294,16 +294,16 @@ class Agent(BaseAgent):
                     f"============ Episode {episode + 1} ============",
                     f"Steps: {current_step}",
                     f"Episode Steps: {episode_steps}",
-                    f"Reward: {episode_reward:.2f}",
+                    f"Reward: {episode_reward}",
                 ]
                 if qs and losses:
-                    msg.append(f"Average Q: {np.mean(qs):.2f}")
-                    msg.append(f"Average Loss: {np.mean(losses):.2f}")
+                    msg.append(f"Average Q: {np.mean(qs):.6f}")
+                    msg.append(f"Average Loss: {np.mean(losses):.6f}")
 
                 print("\n".join(msg))
 
                 episode += 1
-                episode_steps, episode_reward = 0, 0.0
+                episode_steps, episode_reward = 0, 0
                 qs, losses = [], []
 
                 obs, _, _ = self.env.reset()

@@ -1,3 +1,4 @@
 from .environment import Env
-from .robot import Robot
-from .agent import Agent
+from .agent import Agent, HumanAgent
+
+__all__ = ["environment", "agent", "config", "Env", "Agent", "HumanAgent"]

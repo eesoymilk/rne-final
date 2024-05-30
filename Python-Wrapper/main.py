@@ -1,13 +1,21 @@
+import sys
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.append(str(SCRIPT_DIR.parent))
+
 import torch
-from jetbotSim import Robot, Env, Agent
+from jetbotSim import Env, HumanAgent
 
 
 def main() -> None:
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    env = Env()
-    robot = Robot()
-    agent = Agent(env, robot, device=device)
-    agent.run()
+    try:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        env = Env()
+        agent = HumanAgent(env)
+        agent.run()
+    except KeyboardInterrupt:
+        print("\n[Exit]")
 
 
 if __name__ == '__main__':

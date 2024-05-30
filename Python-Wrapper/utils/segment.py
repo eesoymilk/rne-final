@@ -6,7 +6,6 @@ import numpy.typing as npt
 def segment(img: npt.NDArray, one_hot: bool = True) -> npt.NDArray:
     '''Segmentation by pure color detection.
     Applicable to the simulation environment.'''
-    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     blue = img[:, :, 0]
     green = img[:, :, 1]
     red = img[:, :, 2]

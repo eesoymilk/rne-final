@@ -4,7 +4,7 @@ from typing import Optional
 from collections import namedtuple, deque
 
 Transition = namedtuple(
-    "Transition", ("state", "action", "next_state", "reward", "done")
+    "Transition", ("obs", "action", "next_obs", "reward", "done")
 )
 
 

@@ -8,9 +8,9 @@ import numpy as np
 import numpy.typing as npt
 
 try:
-    from jetbotSim import config
+    from jetbot_sim.config import Config
 except ImportError:
-    import config
+    from .config import Config
 
 SocketResponse = tuple[npt.NDArray[np.uint8], int, bool]
 
@@ -35,7 +35,7 @@ class Env:
     def __init__(self):
         self.ws = None
         self.wst = None
-        self._connect_server(config.ip, config.actor)
+        self._connect_server(Config.ip, Config.actor)
         self.buffer = None
         self.on_change = False
 
@@ -72,7 +72,7 @@ class Env:
                 return img.copy(), reward, done
 
     def _move_to_wheel(self, value: float) -> float:
-        length = 2 * np.pi * config.wheel_rad
+        length = 2 * np.pi * Config.wheel_rad
         angular_vel = 360 * (1000 * value / length)
         return angular_vel
 

@@ -4,10 +4,10 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(SCRIPT_DIR.parent))
 
-from datetime import datetime
 import torch
-from jetbotSim import Env, Agent
-from jetbotSim.ddqn import JetbotDDQN
+from datetime import datetime
+from jetbot_sim.environment import Env
+from ddqn.agent import Agent, HumanAgent
 
 
 def main() -> None:
@@ -18,19 +18,19 @@ def main() -> None:
         )
         save_dir.mkdir(parents=True, exist_ok=True)
         env = Env()
-        agent = Agent(
-            env,
-            obs_dim=(84, 84),
-            action_dim=4,
-            save_dir=save_dir,
-            device=device,
-        )
-        agent.train()
+        human_agent = HumanAgent(env)
+        human_agent.run()
+        # agent = Agent(
+        #     env,
+        #     obs_dim=(84, 84),
+        #     action_dim=4,
+        #     save_dir=save_dir,
+        #     device=device,
+        # )
+        # agent.train()
     except KeyboardInterrupt:
         print("\n[Exit]")
 
 
 if __name__ == '__main__':
-    net = JetbotDDQN(4).float()
-    out = net(torch.randn(1, 3, 84, 84), "online")
-    # main()
+    main()

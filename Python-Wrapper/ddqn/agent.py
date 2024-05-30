@@ -14,16 +14,16 @@ import abc
 from typing import Optional
 
 try:
-    from jetbotSim import Env
-    from jetbotSim.segment import segment, decode_segmented
-    from jetbotSim.kbhit import KBHit
-    from jetbotSim.ddqn import JetbotDDQN
-    from jetbotSim.replay_buffer import ReplayBuffer
+    from utils.kbhit import KBHit
+    from utils.segment import segment
+    from ddqn.ddqn import JetbotDDQN
+    from ddqn.replay_buffer import ReplayBuffer
+    from jetbot_sim.environment import Env
 except ImportError:
     # This will trigger when running the script directly
-    from .environment import Env
-    from .segment import segment, decode_segmented
-    from .kbhit import KBHit
+    from ..utils.kbhit import KBHit
+    from ..utils.segment import segment
+    from ..jetbot_sim.environment import Env
     from .ddqn import JetbotDDQN
     from .replay_buffer import ReplayBuffer
 
@@ -97,7 +97,7 @@ class Agent(BaseAgent):
         memory_size: int = 1_000_000,
         gamma: float = 0.99,
         learning_rate: float = 0.001,
-        burnin: int = 500,
+        burnin: int = 32,
         sync_every: int = 10_000,
         learn_every: int = 4,
         save_every: int = 10_000,
@@ -274,10 +274,9 @@ class Agent(BaseAgent):
         qs, losses = [], []
         obs, _, _ = self.env.reset()
         obs = self.preprocess(obs)
-        print(obs.shape)
-        return
         for current_step in range(n_steps):
             action = self.get_action(obs)
+            print(f"Action: {action}")
             next_obs, reward, done = self.env.step(action)
             next_obs = self.preprocess(next_obs)
 
@@ -356,24 +355,20 @@ class HumanAgent(BaseAgent):
     def __init__(self, env: Env):
         super().__init__(env)
         self.kb = KBHit()
+        self.action = 0
 
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
-        if self.kb.kbhit():
-            key = self.kb.getch()
-            if key == 'w':
-                action = 0
-            elif key == 'a':
-                action = 1
-            elif key == 'd':
-                action = 2
-            elif key == 's':
-                action = 3
-            elif key == 'p':
-                action = 4
-            elif key == 'q':
-                raise KeyboardInterrupt
-            else:
-                raise ValueError
-        else:
-            action = 4
-        return action
+        key = self.kb.getch()
+        if key == 'w':
+            self.action = 0
+        elif key == 'a':
+            self.action = 1
+        elif key == 'd':
+            self.action = 2
+        elif key == 's':
+            self.action = 3
+        elif key == 'p':
+            self.action = 4
+        elif key == 'q':
+            raise KeyboardInterrupt
+        return self.action

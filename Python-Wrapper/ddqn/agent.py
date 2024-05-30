@@ -102,7 +102,7 @@ class Agent(BaseAgent):
         learn_every: int = 4,
         save_every: int = 10_000,
         exploration_rate: float = 1.0,
-        exploration_rate_decay: int = 0.99999975,
+        exploration_rate_decay: int = 0.999975,
         exploration_rate_min: float = 0.1,
         device: Optional[str] = None,
         checkpoint: Optional[Path] = None,

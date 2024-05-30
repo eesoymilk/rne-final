@@ -61,6 +61,7 @@ We'll also use the following from PyTorch:
 """
 import sys
 sys.path.append('./jetbotSim')
+sys.path.append('./../jetbotSim')
 from environment import Env
 
 import math
@@ -75,7 +76,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-env = Env
+env = Env()
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
@@ -205,16 +206,26 @@ class ReplayMemory(object):
 
 class DQN(nn.Module):
 
-    def __init__(self, n_observations, n_actions):
+    def __init__(self, sz, n_actions):
+        c, h, w = sz
         super(DQN, self).__init__()
-        self.layer0 = nn.Conv2d(input_channels=3, out_channels=16)
-        
+        self.conv1 = nn.Conv2d(in_channels=c, out_channels=16, kernel_size=3, stride=1)
+        self.act1 = nn.GELU()
+        self.conv2 = nn.Conv2d(in_channels=16, out_channels=64, kernel_size=3, stride=1)
+        self.act2 = nn.GELU()
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=2, stride=1)
+        self.act3 = nn.GELU()
+        self.conv4 = nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3, stride=1)
+        self.act4 = nn.GELU()
+        self.linear1 = nn.Linear(in_features=3136, out_features=1024)
+        self.linear2 = nn.Linear(in_features=1024, out_features=512)
+        self.linear3 = nn.Linear(in_features=512, out_features=n_actions)
 
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
+        x = F.gelu(self.layer1(x))
+        x = F.gelu(self.layer2(x))
         return self.layer3(x)
 
 
@@ -258,11 +269,11 @@ LR = 1e-4
 # Get number of actions from gym action space
 n_actions = len(Env.ACTIONS)
 # Get the number of state observations
-state, info = env.reset()
-n_observations = len(state)
+info = env.reset()
+sz = info[0].shape
 
-policy_net = DQN(n_observations, n_actions).to(device)
-target_net = DQN(n_observations, n_actions).to(device)
+policy_net = DQN(sz, n_actions).to(device)
+target_net = DQN(sz, n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
@@ -404,7 +415,8 @@ else:
 
 for i_episode in range(num_episodes):
     # Initialize the environment and get its state
-    state, info = env.reset()
+    info = env.reset()
+    state = info[0]
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     for t in count():
         action = select_action(state)

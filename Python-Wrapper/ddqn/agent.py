@@ -276,7 +276,6 @@ class Agent(BaseAgent):
         obs = self.preprocess(obs)
         for current_step in range(n_steps):
             action = self.get_action(obs)
-            print(f"Action: {action}")
             next_obs, reward, done = self.env.step(action)
             next_obs = self.preprocess(next_obs)
 
@@ -358,17 +357,18 @@ class HumanAgent(BaseAgent):
         self.action = 0
 
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
-        key = self.kb.getch()
-        if key == 'w':
-            self.action = 0
-        elif key == 'a':
-            self.action = 1
-        elif key == 'd':
-            self.action = 2
-        elif key == 's':
-            self.action = 3
-        elif key == 'p':
-            self.action = 4
-        elif key == 'q':
-            raise KeyboardInterrupt
+        if self.kb.kbhit():
+            key = self.kb.getch()
+            if key == 'w':
+                self.action = 0
+            elif key == 'a':
+                self.action = 1
+            elif key == 'd':
+                self.action = 2
+            elif key == 's':
+                self.action = 3
+            elif key == 'p':
+                self.action = 4
+            elif key == 'q':
+                raise KeyboardInterrupt
         return self.action

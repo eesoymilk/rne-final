@@ -7,7 +7,8 @@ import websocket
 import numpy as np
 import numpy.typing as npt
 
-from jetbotSim import config
+# from jetbotSim import config
+import config
 
 SocketResponse = tuple[npt.NDArray[np.uint8], int, bool]
 

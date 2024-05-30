@@ -4,7 +4,6 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(SCRIPT_DIR.parent))
 
-
 import cv2
 import torch
 from torch import Tensor

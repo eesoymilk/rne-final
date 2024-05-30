@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.append(str(SCRIPT_DIR.parent))
+
 import time
 import json
 import threading

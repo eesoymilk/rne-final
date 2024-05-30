@@ -5,7 +5,7 @@ sys.path.append('./jetbotSim')
 import pickle
 import os, cv2
 from kbhit import KBHit
-msvcrt = KBHit()
+kb = KBHit()
 import torch
 import torchvision
 import torch.nn as nn
@@ -53,8 +53,8 @@ class BaseAgent:
             # self.robot.left(10 if self.frames%4 else 0)
             # self.robot.forward(0 if self.frames%4 else 5)
             dir = b'w'
-            if(msvcrt.kbhit()):
-                dir = msvcrt.getch()
+            if(kb.kbhit()):
+                dir = kb.getch()
             if(dir == b'w' or dir == 'w'):
                 print("Pressed w")
                 self.step(0)
@@ -132,22 +132,22 @@ class HumanAgent(BaseAgent):
         self.stdscr = None
 
     def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
-        try:
-            key = getch.getch().decode('utf-8')
-
+        if(kb.kbhit()):
+            key = kb.getch()
             if key == 'w':
-                return 0
+                action = 0
             elif key == 'a':
-                return 1
+                action = 1
             elif key == 'd':
-                return 2
+                action = 2
             elif key == 's':
-                return 3
+                action = 3
             elif key == 'p':
-                return 4
+                action = 4
             elif key == 'q':
                 raise KeyboardInterrupt
             else:
                 raise ValueError
-        except (UnicodeDecodeError, ValueError):
-            return 0
+        else:
+            action = 4
+        return action

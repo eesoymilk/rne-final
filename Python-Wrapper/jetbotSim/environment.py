@@ -7,8 +7,10 @@ import websocket
 import numpy as np
 import numpy.typing as npt
 
-# from jetbotSim import config
-import config
+try:
+    from jetbotSim import config
+except ImportError:
+    import config
 
 SocketResponse = tuple[npt.NDArray[np.uint8], int, bool]
 
@@ -27,7 +29,7 @@ class Env:
             "name": "backward",
             "motor_speed": (-FORWARD_SPEED, -FORWARD_SPEED),
         },
-        4: {"name": "stop", "motor_speed": (0, 0)}, # Deprecated
+        4: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
     }
 
     def __init__(self):

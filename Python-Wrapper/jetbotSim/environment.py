@@ -26,7 +26,7 @@ class Env:
             "name": "backward",
             "motor_speed": (-FORWARD_SPEED, -FORWARD_SPEED),
         },
-        # 4: {"name": "stop", "motor_speed": (0, 0)}, # Deprecated
+        4: {"name": "stop", "motor_speed": (0, 0)}, # Deprecated
     }
 
     def __init__(self):

@@ -296,9 +296,6 @@ class Agent(BaseAgent):
             next_obs, reward, done = self.env.step(action)
             next_obs = self.preprocess(next_obs)
 
-            self.cache(obs, next_obs, action, reward, done)
-            q, loss = self.learn()
-
             episode_steps += 1
 
             if reward == 0:
@@ -311,6 +308,9 @@ class Agent(BaseAgent):
                     done = True
             else:
                 no_reward_steps = 0
+
+            self.cache(obs, next_obs, action, reward, done)
+            q, loss = self.learn()
 
             episode_reward += reward
 

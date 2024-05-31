@@ -91,19 +91,19 @@ class Agent(BaseAgent):
         env: Env,
         obs_dim: tuple[int, int, int],
         action_dim: int,
-        save_dir: Path,
         batch_size: int = 32,
         memory_size: int = 1_000_000,
         gamma: float = 0.99,
         learning_rate: float = 0.001,
         burnin: int = 32,
-        sync_every: int = 10_000,
+        sync_every: int = 1_000,
         learn_every: int = 4,
         save_every: int = 10_000,
         exploration_rate: float = 1.0,
         exploration_rate_decay: int = 0.99995,
         exploration_rate_min: float = 0.1,
         device: Optional[str] = None,
+        save_dir: Optional[Path] = None,
         checkpoint: Optional[Path] = None,
     ):
         super().__init__(env)
@@ -124,7 +124,6 @@ class Agent(BaseAgent):
         self.save_every = save_every
         self.save_dir = save_dir
 
-        # Mario's DNN to predict the most optimal action - we implement this in the Learn section
         self.net = JetbotDDQN(action_dim).float()
 
         if device is None:
@@ -143,6 +142,14 @@ class Agent(BaseAgent):
         )
         self.loss_fn = torch.nn.SmoothL1Loss()
 
+    def forward_weighted_random(self, forward_prob: float = 0.4):
+        """
+        Randomly select an action with forward having a fixed probability.
+        """
+        other_prob = (1 - forward_prob) / (self.action_dim - 1)
+        weights = [forward_prob] + [other_prob] * (self.action_dim - 1)
+        return np.random.choice(self.action_dim, p=weights)
+
     def get_action(self, observation: npt.NDArray[np.float32]) -> int:
         """
         Given a observation, choose an epsilon-greedy action and update value of step.
@@ -150,11 +157,13 @@ class Agent(BaseAgent):
         Inputs:
         observation(NDArray[np.float32]): A single observation of the current obs, dimension is (obs_dim)
         Outputs:
-        action_idx (int): An integer representing which action Mario will perform
+        action_idx (int): An integer representing which action to perform
         """
         # EXPLORE
         if np.random.rand() < self.exploration_rate:
-            action_idx = np.random.randint(self.action_dim)
+            # weighted random favoring forward
+            action_idx = self.forward_weighted_random()
+            # action_idx = np.random.randint(self.action_dim) # completely random
 
         # EXPLOIT
         else:
@@ -242,14 +251,16 @@ class Agent(BaseAgent):
         return loss.item()
 
     def learn(self):
+        if self.curr_step < self.burnin:
+            # if below the minimum experiences required before training
+            # we do not sync, save, or learn
+            return None, None
+
         if self.curr_step % self.sync_every == 0:
             self.net.sync()
 
         if self.curr_step % self.save_every == 0:
             self.save()
-
-        if self.curr_step < self.burnin:
-            return None, None
 
         if self.curr_step % self.learn_every != 0:
             return None, None
@@ -310,7 +321,40 @@ class Agent(BaseAgent):
             else:
                 obs = next_obs
 
+    def eval(self, n_episode: int = 10):
+        rewards = []
+        for episode in range(n_episode):
+            episode_steps, episode_reward = 0, 0
+            obs, _, _ = self.env.reset()
+            obs = self.preprocess(obs)
+            while True:
+                action = self.get_action(obs)
+                next_obs, reward, done = self.env.step(action)
+                next_obs = self.preprocess(next_obs)
+
+                episode_steps += 1
+                episode_reward += reward
+
+                if done:
+                    break
+
+                obs = next_obs
+
+            rewards.append(episode_reward)
+            msg = [
+                f"============ Episode {episode + 1} ============",
+                f"Episode Steps: {episode_steps}",
+                f"Reward: {episode_reward}",
+            ]
+            print("\n".join(msg))
+
+        print(f"Average Reward: {np.mean(rewards):.6f}")
+
     def save(self, verbose: bool = False):
+        if self.save_dir is None:
+            print("Save directory not provided. Model not saved.")
+            return
+
         save_path = (
             self.save_dir
             / f"ddqn_{int(self.curr_step // self.save_every)}.chkpt"
@@ -326,26 +370,28 @@ class Agent(BaseAgent):
         )
 
         if verbose:
-            print(f"MarioDDQN saved to {save_path} at step {self.curr_step}")
+            print(f"DDQN saved to {save_path} at step {self.curr_step}")
 
     def load(self, load_path: Path):
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
+
+        print(f"Loading model at {load_path}...")
 
         ckp: dict = torch.load(load_path, map_location=self.device)
         exploration_rate = ckp.get("exploration_rate")
         cnns = ckp.get("cnns")
         val_stream = ckp.get("value_stream")
         adv_stream = ckp.get("advantage_stream")
-
-        print(
-            f"Loading model at {load_path} with exploration rate {exploration_rate}"
-        )
         self.net.cnns.load_state_dict(cnns)
         self.net.val_stream.load_state_dict(val_stream)
         self.net.adv_stream.load_state_dict(adv_stream)
         self.net.sync()
         self.exploration_rate = exploration_rate
+
+        print(
+            f"Model loaded successfully from {load_path} with exploration rate {exploration_rate}"
+        )
 
 
 class HumanAgent(BaseAgent):

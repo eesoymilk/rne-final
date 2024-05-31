@@ -7,21 +7,21 @@ sys.path.append(str(SCRIPT_DIR.parent))
 import torch
 from datetime import datetime
 from jetbot_sim.environment import Env
-from ddqn.agent import Agent, HumanAgent
+from ddqn.agent import Agent
 
 
 def main() -> None:
     try:
+        print("[Start]")
+
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        save_dir = (
-            SCRIPT_DIR / "checkpoints" / f"{datetime.now():%Y%m%d-%H%M%S}"
-        )
+        print("[Device]:", device)
+
+        save_dir = SCRIPT_DIR / "checkpoints" / f"{datetime.now():%m%d%H%M}"
         save_dir.mkdir(parents=True, exist_ok=True)
-        env = Env()
-        # human_agent = HumanAgent(env)
-        # human_agent.run()
+
         agent = Agent(
-            env,
+            Env(),
             obs_dim=(84, 84),
             action_dim=4,
             save_dir=save_dir,
@@ -29,7 +29,10 @@ def main() -> None:
         )
         agent.train()
     except KeyboardInterrupt:
-        print("\n[Exit]")
+        agent.save()
+        print("\n[Interrupted]")
+    finally:
+        print("[Exit]")
 
 
 if __name__ == '__main__':

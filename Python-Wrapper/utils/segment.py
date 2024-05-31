@@ -11,14 +11,14 @@ def segment(img: npt.NDArray, one_hot: bool = True) -> npt.NDArray:
     red = img[:, :, 2]
 
     # Create a result array with the same height and width, initialized to 1
-    result = np.ones((img.shape[0], img.shape[1]), dtype=int)
+    result = np.ones((img.shape[0], img.shape[1]), dtype=np.uint8)
 
     # Apply the conditions to assign the segmentation labels
     result[(red - 5 > green) & (red - 5 > blue)] = 2
     result[blue > 200] = 0
 
     if one_hot:
-        result = np.eye(3)[result].transpose(2, 0, 1)
+        result = np.eye(3, dtype=np.uint8)[result].transpose(2, 0, 1)
 
     return result
 
@@ -30,9 +30,9 @@ def decode_segmented(mask):
         [0, 0, 0],
         [0, 0, 255],
     ]
-    img = np.zeros((*mask.shape, 3), dtype=np.uint8)
-    for i in range(3):
-        img[mask == i] = colors[i]
+    img = np.zeros((*mask.shape[:2], 3), dtype=np.uint8)
+    for i, color in enumerate(colors):
+        img[mask == i] = color
     return img
 
 

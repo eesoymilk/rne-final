@@ -33,7 +33,7 @@ class Env:
         2: {"name": "right", "motor_speed": (TURN_SPEED, 0)},
         3: {
             "name": "backward",
-            "motor_speed": (-FORWARD_SPEED, -FORWARD_SPEED),
+            "motor_speed": (-0.2, -0.2),
         },
         4: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
     }

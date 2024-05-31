@@ -101,9 +101,9 @@ class Agent(BaseAgent):
         exploration_rate: float = 1.0,
         exploration_rate_decay: int = 0.99995,
         exploration_rate_min: float = 0.1,
-        no_reward_panelty: int = 5,
-        no_reward_tolerance: int = 10,
-        no_reward_limit: int = 100,
+        no_reward_panelty: int = 1,
+        no_reward_tolerance: int = 30,
+        no_reward_limit: int = 40,
         device: Optional[str] = None,
         save_dir: Optional[Path] = None,
         checkpoint: Optional[Path] = None,
@@ -305,7 +305,7 @@ class Agent(BaseAgent):
                 no_reward_steps += 1
 
                 if no_reward_steps > self.no_reward_tolerance:
-                    reward = -no_reward_steps
+                    reward = -self.no_reward_panelty
 
                 if no_reward_steps > self.no_reward_limit:
                     done = True

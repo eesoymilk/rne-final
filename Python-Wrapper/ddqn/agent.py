@@ -84,12 +84,11 @@ class BaseAgent:
 
 
 class Agent(BaseAgent):
-    """This agent utilizes a pre-trained ResNet18 model to predict the action to take."""
+    """This agent utilizes a DDQN model to predict the action to take."""
 
     def __init__(
         self,
         env: Env,
-        obs_dim: tuple[int, int, int],
         action_dim: int,
         batch_size: int = 32,
         memory_size: int = 1_000_000,
@@ -107,7 +106,6 @@ class Agent(BaseAgent):
         checkpoint: Optional[Path] = None,
     ):
         super().__init__(env)
-        self.obs_dim = obs_dim
         self.action_dim = action_dim
         self.batch_size = batch_size
         self.memory = ReplayBuffer(capacity=memory_size, batch_size=batch_size)
@@ -299,7 +297,8 @@ class Agent(BaseAgent):
                 qs.append(q)
                 losses.append(loss)
 
-            if done:
+            if done and episode_steps > 2:
+                # if done in less than 2 step, it's probably a bug
                 msg = [
                     f"============ Episode {episode + 1} ============",
                     f"Steps: {current_step}",
@@ -335,7 +334,8 @@ class Agent(BaseAgent):
                 episode_steps += 1
                 episode_reward += reward
 
-                if done:
+                if done and episode_steps > 2:
+                    # if done in less than 2 step, it's probably a bug
                     break
 
                 obs = next_obs

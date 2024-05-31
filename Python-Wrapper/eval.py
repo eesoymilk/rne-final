@@ -5,9 +5,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(SCRIPT_DIR.parent))
 
 import torch
-from datetime import datetime
 from jetbot_sim.environment import Env
-from ddqn.agent import Agent, HumanAgent
+from ddqn.agent import Agent
 
 
 def main() -> None:
@@ -16,10 +15,9 @@ def main() -> None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print("[Device]:", device)
 
-        chkpt = SCRIPT_DIR / "checkpoints" / "20240530-222536" / "ddqn_25.chkpt"
+        chkpt = SCRIPT_DIR / "models" / "ddqn_500k.chkpt"
         agent = Agent(
             Env(),
-            obs_dim=(84, 84),
             action_dim=4,
             checkpoint=chkpt,
             device=device,

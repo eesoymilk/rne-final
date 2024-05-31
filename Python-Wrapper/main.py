@@ -13,18 +13,18 @@ from ddqn.agent import Agent
 def main() -> None:
     try:
         print("[Start]")
-
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print("[Device]:", device)
 
         save_dir = SCRIPT_DIR / "checkpoints" / f"{datetime.now():%m%d%H%M}"
+        chkpt = SCRIPT_DIR / "checkpoints" / "05311113" / "ddqn_12.chkpt"
         save_dir.mkdir(parents=True, exist_ok=True)
 
         agent = Agent(
             Env(),
-            obs_dim=(84, 84),
             action_dim=4,
             save_dir=save_dir,
+            checkpoint=chkpt,
             device=device,
         )
         agent.train()

@@ -17,7 +17,7 @@ def main() -> None:
         print("[Device]:", device)
 
         save_dir = SCRIPT_DIR / "checkpoints" / f"{datetime.now():%m%d%H%M}"
-        chkpt = SCRIPT_DIR / "checkpoints" / "05311113" / "ddqn_12.chkpt"
+        chkpt = SCRIPT_DIR / "models" / "ddqn_500k.chkpt"
         save_dir.mkdir(parents=True, exist_ok=True)
 
         agent = Agent(

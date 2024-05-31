@@ -28,9 +28,10 @@ class ReplayBuffer:
         self.memory.extend(transitions)
 
     def sample(self, batch_size: Optional[int] = None):
+        batch_size = self.batch_size if batch_size is None else batch_size
         return random.sample(
             self.memory,
-            self.batch_size if batch_size is None else batch_size,
+            batch_size if batch_size < len(self.memory) else len(self.memory),
         )
 
     def __len__(self):

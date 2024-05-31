@@ -94,7 +94,7 @@ class Agent(BaseAgent):
         memory_size: int = 1_000_000,
         gamma: float = 0.99,
         learning_rate: float = 0.001,
-        burnin: int = 32,
+        burnin: int = 256,
         sync_every: int = 1_000,
         learn_every: int = 4,
         save_every: int = 10_000,

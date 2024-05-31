@@ -16,7 +16,7 @@ def main() -> None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print("[Device]:", device)
 
-        chkpt = SCRIPT_DIR / "checkpoints" / "20240530-222536" / "ddqn_25.chkpt"
+        chkpt = SCRIPT_DIR / "checkpoints" / "05311709" / "ddqn_16.chkpt"
         agent = Agent(
             Env(),
             obs_dim=(84, 84),

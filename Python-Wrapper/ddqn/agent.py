@@ -90,7 +90,7 @@ class Agent(BaseAgent):
         self,
         env: Env,
         action_dim: int,
-        batch_size: int = 32,
+        batch_size: int = 256,
         memory_size: int = 1_000_000,
         gamma: float = 0.99,
         learning_rate: float = 0.001,

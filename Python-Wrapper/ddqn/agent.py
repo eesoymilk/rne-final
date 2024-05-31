@@ -95,12 +95,13 @@ class Agent(BaseAgent):
         gamma: float = 0.99,
         learning_rate: float = 0.001,
         burnin: int = 256,
-        sync_every: int = 1_000,
-        learn_every: int = 4,
-        save_every: int = 10_000,
+        sync_interval: int = 1_000,
+        learn_interval: int = 4,
+        save_interval: int = 10_000,
         exploration_rate: float = 1.0,
         exploration_rate_decay: int = 0.99995,
         exploration_rate_min: float = 0.1,
+        no_reward_tolerance: int = 100,
         device: Optional[str] = None,
         save_dir: Optional[Path] = None,
         checkpoint: Optional[Path] = None,
@@ -113,13 +114,14 @@ class Agent(BaseAgent):
         self.exploration_rate = exploration_rate
         self.exploration_rate_decay = exploration_rate_decay
         self.exploration_rate_min = exploration_rate_min
-        self.gamma = gamma
 
         self.curr_step = 0
+        self.gamma = gamma
         self.burnin = burnin  # min. experiences before training
-        self.learn_every = learn_every
-        self.sync_every = sync_every
-        self.save_every = save_every
+        self.learn_interval = learn_interval
+        self.sync_interval = sync_interval
+        self.save_interval = save_interval
+        self.no_reward_tolerance = no_reward_tolerance
         self.save_dir = save_dir
 
         self.net = JetbotDDQN(action_dim).float()
@@ -256,13 +258,13 @@ class Agent(BaseAgent):
             # we do not sync, save, or learn
             return None, None
 
-        if self.curr_step % self.sync_every == 0:
+        if self.curr_step % self.sync_interval == 0:
             self.net.sync()
 
-        if self.curr_step % self.save_every == 0:
+        if self.curr_step % self.save_interval == 0:
             self.save()
 
-        if self.curr_step % self.learn_every != 0:
+        if self.curr_step % self.learn_interval != 0:
             return None, None
 
         # Sample from memory
@@ -280,10 +282,11 @@ class Agent(BaseAgent):
         return (td_est.mean().item(), loss)
 
     def train(self, n_steps: int = 50_000_001):
-        episode, episode_steps, episode_reward = 0, 0, 0
+        episode, episode_steps, episode_reward, no_reward_steps = 0, 0, 0, 0
         qs, losses = [], []
         obs, _, _ = self.env.reset()
         obs = self.preprocess(obs)
+
         for current_step in range(n_steps):
             action = self.get_action(obs)
             next_obs, reward, done = self.env.step(action)
@@ -293,7 +296,14 @@ class Agent(BaseAgent):
             q, loss = self.learn()
 
             episode_steps += 1
-            episode_reward += reward
+
+            if reward == 0:
+                no_reward_steps += 1
+                if no_reward_steps > self.no_reward_tolerance:
+                    done = True
+            else:
+                no_reward_steps = 0
+                episode_reward += reward
 
             if q is not None and loss is not None:
                 qs.append(q)
@@ -359,7 +369,7 @@ class Agent(BaseAgent):
 
         save_path = (
             self.save_dir
-            / f"ddqn_{int(self.curr_step // self.save_every)}.chkpt"
+            / f"ddqn_{int(self.curr_step // self.save_interval)}.chkpt"
         )
         torch.save(
             dict(

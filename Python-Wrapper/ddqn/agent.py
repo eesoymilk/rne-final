@@ -333,7 +333,7 @@ class Agent(BaseAgent):
                 print("\n".join(msg))
 
                 episode += 1
-                episode_steps, episode_reward = 0, 0
+                episode_steps, episode_reward, no_reward_steps = 0, 0, 0
                 qs, losses = [], []
 
                 obs, _, _ = self.env.reset()

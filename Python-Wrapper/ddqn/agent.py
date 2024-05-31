@@ -148,7 +148,9 @@ class Agent(BaseAgent):
         weights = [forward_prob] + [other_prob] * (self.action_dim - 1)
         return np.random.choice(self.action_dim, p=weights)
 
-    def get_action(self, observation: npt.NDArray[np.float32]) -> int:
+    def get_action(
+        self, observation: npt.NDArray[np.float32], exploit: bool = False
+    ) -> int:
         """
         Given a observation, choose an epsilon-greedy action and update value of step.
 
@@ -158,7 +160,7 @@ class Agent(BaseAgent):
         action_idx (int): An integer representing which action to perform
         """
         # EXPLORE
-        if np.random.rand() < self.exploration_rate:
+        if not exploit and np.random.rand() < self.exploration_rate:
             # weighted random favoring forward
             action_idx = self.forward_weighted_random()
             # action_idx = np.random.randint(self.action_dim) # completely random

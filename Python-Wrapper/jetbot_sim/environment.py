@@ -39,12 +39,12 @@ class Env:
             },
             1: {"name": "left", "motor_speed": (0, turn_speed)},
             2: {"name": "right", "motor_speed": (turn_speed, 0)},
-            3: {"name": "sharp_left", "motor_speed": (-0.7* turn_speed, 0.7* turn_speed)},
-            4: {"name": "sharp_right", "motor_speed": (0.7* turn_speed, -0.7* turn_speed)},
-            5: {
+            3: {
                 "name": "backward",
                 "motor_speed": (-0.2, -0.2),
-            }#,
+            },
+            4: {"name": "sharp_left", "motor_speed": (-0.7* turn_speed, 0.7* turn_speed)},
+            5: {"name": "sharp_right", "motor_speed": (0.7* turn_speed, -0.7* turn_speed)}
             #6: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
         }
 

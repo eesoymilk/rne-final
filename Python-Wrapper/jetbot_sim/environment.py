@@ -44,8 +44,8 @@ class Env:
             5: {
                 "name": "backward",
                 "motor_speed": (-0.2, -0.2),
-            },
-            6: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
+            }#,
+            #6: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
         }
 
         self.reset()

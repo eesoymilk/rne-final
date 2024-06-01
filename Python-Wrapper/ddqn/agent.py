@@ -119,7 +119,8 @@ class Agent(BaseAgent):
 
         self.curr_step = 0
         self.gamma = gamma
-        self.burnin = burnin  # min. experiences before training
+        # min. experiences before training
+        self.burnin = max(burnin, batch_size)
         self.learn_interval = learn_interval
         self.sync_interval = sync_interval
         self.save_interval = save_interval

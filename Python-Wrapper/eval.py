@@ -15,10 +15,11 @@ def main() -> None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print("[Device]:", device)
 
-        chkpt = SCRIPT_DIR / "checkpoints/06011047" / "ddqn_31.chkpt"
+        ver = input("version of model? ")
+        chkpt = SCRIPT_DIR / "models" / f"ddqn_{ver}.chkpt"
         agent = Agent(
             Env(turn_speed=0.15),
-            action_dim=4,
+            action_dim=6,
             checkpoint=chkpt,
             device=device,
         )

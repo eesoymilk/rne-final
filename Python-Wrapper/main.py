@@ -33,7 +33,8 @@ def main() -> None:
         agent.train()
     except KeyboardInterrupt:
         agent.save()
-        agent.save_recall()
+        if(input("Save replay buffer? (y/n): ").lower() == "y"):
+            agent.save_replay()
         print("\n[Interrupted]")
     finally:
         print("[Exit]")

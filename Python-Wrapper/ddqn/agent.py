@@ -107,7 +107,6 @@ class Agent(BaseAgent):
         device: Optional[str] = None,
         save_dir: Optional[Path] = None,
         checkpoint: Optional[Path] = None,
-        replay_buffer: Optional[Path] = None,
     ):
         super().__init__(env)
         self.action_dim = action_dim
@@ -375,7 +374,7 @@ class Agent(BaseAgent):
 
         print(f"Average Reward: {np.mean(rewards):.6f}")
 
-    def save_recall(self):
+    def save_replay(self):
         try:
             with open(f'{self.save_dir}/replay_buffer.pkl', 'wb') as f:
                 pickle.dump(self.memory, f)
@@ -404,7 +403,7 @@ class Agent(BaseAgent):
         if verbose:
             print(f"DDQN saved to {save_path} at step {self.curr_step}")
 
-    def load(self, load_path: Path, replay_path: Path):
+    def load(self, load_path: Path, replay_path = None):
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
         print(f"Loading model at {load_path}...")
@@ -425,6 +424,8 @@ class Agent(BaseAgent):
         )
 
         try:
+            if(replay_path is None):
+                return
             print(f"Loading replay buffer at {replay_path}...")
             with open(replay_path, "rb") as f:
                 self.memory = pickle.load(f)

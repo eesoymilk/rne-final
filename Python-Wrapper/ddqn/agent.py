@@ -345,10 +345,12 @@ class Agent(BaseAgent):
                 obs = next_obs
 
     def eval(self, n_episode: int = 10):
+        print("[Start]")
         rewards = []
         for episode in range(n_episode):
             episode_steps, episode_reward = 0, 0
-            obs, _, _ = self.env.reset()
+            obs, __, _ = self.env.reset()
+            # print(__, _)
             obs = self.preprocess(obs)
             while True:
                 action = self.get_action(obs)

@@ -213,12 +213,6 @@ class Agent(BaseAgent):
         reward (float),
         done (bool)
         """
-        obs = torch.FloatTensor(obs)
-        next_obs = torch.FloatTensor(next_obs)
-        action = torch.IntTensor([action])
-        reward = torch.DoubleTensor([reward])
-        done = torch.BoolTensor([done])
-
         self.memory.add(obs, next_obs, action, reward, done)
 
     def recall(

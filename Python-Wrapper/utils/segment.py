@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
-
 
 def segment(img: npt.NDArray, one_hot: bool = True) -> npt.NDArray:
     '''Segmentation by pure color detection.

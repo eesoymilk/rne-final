@@ -37,8 +37,8 @@ class Env:
                 "name": "forward",
                 "motor_speed": (forward_speed, forward_speed),
             },
-            1: {"name": "left", "motor_speed": (-turn_speed, turn_speed)},
-            2: {"name": "right", "motor_speed": (turn_speed, -turn_speed)},
+            1: {"name": "left", "motor_speed": (0, turn_speed)},
+            2: {"name": "right", "motor_speed": (turn_speed, 0)},
             3: {
                 "name": "backward",
                 "motor_speed": (-0.2, -0.2),

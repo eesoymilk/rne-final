@@ -21,7 +21,7 @@ def main() -> None:
         save_dir.mkdir(parents=True, exist_ok=True)
 
         agent = Agent(
-            Env(turn_speed=0.15),
+            Env(),
             action_dim=4,
             memory_size=500_000,
             batch_size=1024,

@@ -4,7 +4,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(SCRIPT_DIR.parent))
 
-import torch
+import torch, pickle
 from datetime import datetime
 from jetbot_sim.environment import Env
 from ddqn.agent import Agent
@@ -33,6 +33,7 @@ def main() -> None:
         agent.train()
     except KeyboardInterrupt:
         agent.save()
+        agent.save_recall()
         print("\n[Interrupted]")
     finally:
         print("[Exit]")

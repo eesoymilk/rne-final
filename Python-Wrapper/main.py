@@ -17,7 +17,7 @@ def main() -> None:
         print("[Device]:", device)
 
         save_dir = SCRIPT_DIR / "checkpoints" / f"{datetime.now():%m%d%H%M}"
-        chkpt = None #SCRIPT_DIR / "models" / "ddqn_1M.chkpt"
+        chkpt = SCRIPT_DIR / "models" / "ddqn_1070k.chkpt"
         save_dir.mkdir(parents=True, exist_ok=True)
 
         agent = Agent(
@@ -27,6 +27,7 @@ def main() -> None:
             checkpoint=chkpt,
             device=device,
         )
+        agent.exploration_rate = 0.95
         agent.train()
     except KeyboardInterrupt:
         agent.save()

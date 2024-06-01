@@ -22,8 +22,8 @@ def main() -> None:
 
         agent = Agent(
             Env(),
-            action_dim=4,
-            memory_size=500_000,
+            action_dim=7,
+            memory_size=1_000_000,
             batch_size=1024,
             save_dir=save_dir,
             checkpoint=chkpt,

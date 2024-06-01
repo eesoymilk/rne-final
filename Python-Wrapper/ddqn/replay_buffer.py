@@ -30,8 +30,6 @@ class ReplayBuffer:
         self.rewards = np.zeros(capacity, dtype=np.float32)
         self.dones = np.zeros(capacity, dtype=bool)
 
-        # self.memory = deque([], maxlen=capacity)
-
     @property
     def capacity(self):
         return self._capacity

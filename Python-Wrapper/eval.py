@@ -17,7 +17,7 @@ def main() -> None:
 
         chkpt = SCRIPT_DIR / "models" / "ddqn_16.chkpt"
         agent = Agent(
-            Env(),
+            Env(turn_speed=0.15),
             action_dim=4,
             checkpoint=chkpt,
             device=device,

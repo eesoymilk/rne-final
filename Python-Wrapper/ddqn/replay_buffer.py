@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 from typing import Optional
 from collections import namedtuple, deque
@@ -10,29 +11,54 @@ Transition = namedtuple(
 
 class ReplayBuffer:
 
-    def __init__(self, capacity: int, batch_size: int):
+    def __init__(
+        self,
+        obs_dim: tuple[int, int, int],
+        act_dim: int,
+        capacity: int,
+        batch_size: int,
+    ):
         self._capacity = capacity
+        self._count = 0
         self.batch_size = batch_size
-        self.memory = deque([], maxlen=capacity)
+
+        self.observations = np.zeros((capacity, *obs_dim), dtype=np.float32)
+        self.next_observations = np.zeros(
+            (capacity, *obs_dim), dtype=np.float32
+        )
+        self.actions = np.zeros((capacity, act_dim), dtype=np.float32)
+        self.rewards = np.zeros(capacity, dtype=np.float32)
+        self.dones = np.zeros(capacity, dtype=bool)
+
+        # self.memory = deque([], maxlen=capacity)
 
     @property
     def capacity(self):
         return self._capacity
 
-    def add(self, *args):
-        """Save a transition"""
-        self.memory.append(Transition(*args))
+    def add(self, obs, next_obs, act, reward, done):
+        idx = self._count % self.capacity
 
-    def extend(self, transitions):
-        """Save a list of transitions"""
-        self.memory.extend(transitions)
+        self.observations[idx] = obs
+        self.next_observations[idx] = next_obs
+        self.actions[idx] = act
+        self.rewards[idx] = reward
+        self.dones[idx] = done
+
+        self._count += 1
 
     def sample(self, batch_size: Optional[int] = None):
+        size = min(self._count, self.capacity)
         batch_size = self.batch_size if batch_size is None else batch_size
-        return random.sample(
-            self.memory,
-            batch_size if batch_size < len(self.memory) else len(self.memory),
+
+        indices = np.random.randint(0, size, min(batch_size, size))
+        return (
+            self.observations[indices],
+            self.actions[indices],
+            self.next_observations[indices],
+            self.rewards[indices],
+            self.dones[indices],
         )
 
     def __len__(self):
-        return len(self.memory)
+        return min(self._count, self.capacity)

@@ -111,7 +111,12 @@ class Agent(BaseAgent):
         super().__init__(env)
         self.action_dim = action_dim
         self.batch_size = batch_size
-        self.memory = ReplayBuffer(capacity=memory_size, batch_size=batch_size)
+        self.memory = ReplayBuffer(
+            obs_dim=(3, *self.processed_dim),
+            act_dim=4,
+            capacity=memory_size,
+            batch_size=batch_size,
+        )
 
         self.exploration_rate = exploration_rate
         self.exploration_rate_decay = exploration_rate_decay

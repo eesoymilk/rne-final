@@ -22,23 +22,7 @@ SocketResponse = tuple[npt.NDArray[np.uint8], int, bool]
 
 
 class Env:
-    FORWARD_SPEED = 0.5
-    TURN_SPEED = 0.1
-    ACTIONS = {
-        0: {
-            "name": "forward",
-            "motor_speed": (FORWARD_SPEED, FORWARD_SPEED),
-        },
-        1: {"name": "left", "motor_speed": (0, TURN_SPEED)},
-        2: {"name": "right", "motor_speed": (TURN_SPEED, 0)},
-        3: {
-            "name": "backward",
-            "motor_speed": (-0.2, -0.2),
-        },
-        4: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
-    }
-
-    def __init__(self):
+    def __init__(self, forward_speed: float = 0.5, turn_speed: float = 0.1):
         self.ws = None
         self.wst = None
         self._connect_server(Config.ip, Config.actor)
@@ -47,6 +31,21 @@ class Env:
 
         self._left_motor = 0
         self._right_motor = 0
+
+        self.actions = {
+            0: {
+                "name": "forward",
+                "motor_speed": (forward_speed, forward_speed),
+            },
+            1: {"name": "left", "motor_speed": (0, turn_speed)},
+            2: {"name": "right", "motor_speed": (turn_speed, 0)},
+            3: {
+                "name": "backward",
+                "motor_speed": (-0.2, -0.2),
+            },
+            4: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
+        }
+
         self.reset()
 
     def _connect_server(self, ip, actor):
@@ -121,7 +120,7 @@ class Env:
 
     def step(self, action: int) -> SocketResponse:
         try:
-            return self.set_motor(*self.ACTIONS[action]["motor_speed"])
+            return self.set_motor(*self.actions[action]["motor_speed"])
         except KeyError:
             raise ValueError(f"Invalid action: {action}")
 

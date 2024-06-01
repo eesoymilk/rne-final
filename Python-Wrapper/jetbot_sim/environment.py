@@ -23,14 +23,14 @@ SocketResponse = tuple[npt.NDArray[np.uint8], int, bool]
 
 class Env:
     FORWARD_SPEED = 0.5
-    TURN_SPEED = 0.1
+    TURN_SPEED = 0.15 # 0.1 for training, 0.15 for eval with 1M, 0.2 for eval with 500k
     ACTIONS = {
         0: {
             "name": "forward",
             "motor_speed": (FORWARD_SPEED, FORWARD_SPEED),
         },
-        1: {"name": "left", "motor_speed": (0, TURN_SPEED)},
-        2: {"name": "right", "motor_speed": (TURN_SPEED, 0)},
+        1: {"name": "left", "motor_speed": (-TURN_SPEED, TURN_SPEED)},
+        2: {"name": "right", "motor_speed": (TURN_SPEED, -TURN_SPEED)},
         3: {
             "name": "backward",
             "motor_speed": (-0.2, -0.2),

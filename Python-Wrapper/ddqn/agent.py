@@ -113,7 +113,6 @@ class Agent(BaseAgent):
         self.batch_size = batch_size
         self.memory = ReplayBuffer(
             obs_dim=(3, *self.processed_dim),
-            act_dim=4,
             capacity=memory_size,
             batch_size=batch_size,
         )
@@ -228,15 +227,17 @@ class Agent(BaseAgent):
         """
         Retrieve a batch of experiences from memory
         """
-        batch = self.memory.sample(self.batch_size)
-        obs, next_obs, action, reward, done = map(torch.stack, zip(*batch))
+        obs, next_obs, action, reward, done = map(
+            lambda x: torch.from_numpy(x).to(device=self.device),
+            self.memory.sample(self.batch_size),
+        )
 
         return (
-            obs.to(device=self.device),
-            next_obs.to(device=self.device),
-            action.to(device=self.device).squeeze(),
-            reward.to(device=self.device).squeeze(),
-            done.to(device=self.device).squeeze(),
+            obs,
+            next_obs,
+            action.squeeze(),
+            reward.squeeze(),
+            done.squeeze(),
         )
 
     def td_estimate(self, obs: Tensor, action: Tensor):

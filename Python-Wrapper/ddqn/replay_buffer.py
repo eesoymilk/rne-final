@@ -14,7 +14,6 @@ class ReplayBuffer:
     def __init__(
         self,
         obs_dim: tuple[int, int, int],
-        act_dim: int,
         capacity: int,
         batch_size: int,
     ):
@@ -26,7 +25,7 @@ class ReplayBuffer:
         self.next_observations = np.zeros(
             (capacity, *obs_dim), dtype=np.float32
         )
-        self.actions = np.zeros((capacity, act_dim), dtype=np.float32)
+        self.actions = np.zeros(capacity, dtype=int)
         self.rewards = np.zeros(capacity, dtype=np.float32)
         self.dones = np.zeros(capacity, dtype=bool)
 
@@ -52,8 +51,8 @@ class ReplayBuffer:
         indices = np.random.randint(0, size, min(batch_size, size))
         return (
             self.observations[indices],
-            self.actions[indices],
             self.next_observations[indices],
+            self.actions[indices],
             self.rewards[indices],
             self.dones[indices],
         )

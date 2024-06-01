@@ -17,11 +17,11 @@ def main() -> None:
         print("[Device]:", device)
 
         save_dir = SCRIPT_DIR / "checkpoints" / f"{datetime.now():%m%d%H%M}"
-        chkpt = SCRIPT_DIR / "models" / "ddqn_1070k.chkpt"
+        chkpt = None #SCRIPT_DIR / "models" / "ddqn_1070k.chkpt"
         save_dir.mkdir(parents=True, exist_ok=True)
 
         agent = Agent(
-            Env(),
+            Env(turn_speed=0.15),
             action_dim=4,
             memory_size=500_000,
             batch_size=1024,

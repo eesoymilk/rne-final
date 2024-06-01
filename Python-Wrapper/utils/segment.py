@@ -18,7 +18,7 @@ def segment(img: npt.NDArray, one_hot: bool = True) -> npt.NDArray:
     result[blue > 200] = 0
 
     if one_hot:
-        result = np.eye(3, dtype=np.uint8)[result].transpose(2, 0, 1)
+        result = np.eye(3, dtype=np.bool_)[result].transpose(2, 0, 1)
 
     return result
 
@@ -40,7 +40,7 @@ def main() -> None:
     img = cv2.imread("input.png")
     img = cv2.resize(img, (224, 224))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    mask = segment(img, one_hot=False)
+    mask = segment(img, one_hot=True)
     img = decode_segmented(mask)
     print(img.shape)
     # cv2.imshow("image", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))

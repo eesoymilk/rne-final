@@ -36,8 +36,8 @@ class BaseAgent:
     @abc.abstractmethod
     def cache(
         self,
-        obs: npt.NDArray[np.float32],
-        next_obs: npt.NDArray[np.float32],
+        obs: npt.NDArray[np.bool_],
+        next_obs: npt.NDArray[np.bool_],
         action: int,
         reward: float,
         done: bool,
@@ -49,10 +49,10 @@ class BaseAgent:
         pass
 
     @abc.abstractmethod
-    def get_action(self, obs: npt.NDArray[np.uint8]) -> int:
+    def get_action(self, obs: npt.NDArray[np.bool_]) -> int:
         pass
 
-    def preprocess(self, obs: npt.NDArray[np.uint8]) -> npt.NDArray[np.float32]:
+    def preprocess(self, obs: npt.NDArray[np.uint8]) -> npt.NDArray[np.bool_]:
         return segment(cv2.resize(obs, self.processed_dim))
 
     def run(self, episodes: int = 100):
@@ -160,7 +160,7 @@ class Agent(BaseAgent):
         return np.random.choice(self.action_dim, p=weights)
 
     def get_action(
-        self, observation: npt.NDArray[np.float32], exploit: bool = False
+        self, observation: npt.NDArray[np.bool_], exploit: bool = False
     ) -> int:
         """
         Given a observation, choose an epsilon-greedy action and update value of step.
@@ -179,7 +179,7 @@ class Agent(BaseAgent):
         # EXPLOIT
         else:
             obs_tensor = (
-                torch.FloatTensor(observation)
+                torch.FloatTensor(observation.astype(np.float32))
                 .to(device=self.device)
                 .unsqueeze(0)
             )
@@ -197,8 +197,8 @@ class Agent(BaseAgent):
 
     def cache(
         self,
-        obs: npt.NDArray[np.float32],
-        next_obs: npt.NDArray[np.float32],
+        obs: npt.NDArray[np.bool_],
+        next_obs: npt.NDArray[np.bool_],
         action: int,
         reward: float,
         done: bool,
@@ -236,6 +236,7 @@ class Agent(BaseAgent):
 
     def td_estimate(self, obs: Tensor, action: Tensor):
         # Q_online(s,a)
+        obs = obs.float()
         current_Q: Tensor = self.net(obs, model="online")[
             np.arange(0, self.batch_size), action
         ]
@@ -243,6 +244,7 @@ class Agent(BaseAgent):
 
     @torch.no_grad()
     def td_target(self, reward: Tensor, next_obs: Tensor, done: Tensor):
+        next_obs = next_obs.float()
         next_obs_Q: Tensor = self.net(next_obs, model="online")
         best_action: Tensor = torch.argmax(next_obs_Q, axis=1)
         next_Q: Tensor = self.net(next_obs, model="target")[

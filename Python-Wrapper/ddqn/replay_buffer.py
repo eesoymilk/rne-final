@@ -21,9 +21,9 @@ class ReplayBuffer:
         self._count = 0
         self.batch_size = batch_size
 
-        self.observations = np.zeros((capacity, *obs_dim), dtype=np.float32)
+        self.observations = np.zeros((capacity, *obs_dim), dtype=np.bool_)
         self.next_observations = np.zeros(
-            (capacity, *obs_dim), dtype=np.float32
+            (capacity, *obs_dim), dtype=np.bool_
         )
         self.actions = np.zeros(capacity, dtype=int)
         self.rewards = np.zeros(capacity, dtype=np.float32)

@@ -18,7 +18,7 @@ def main() -> None:
         ver = input("version of model? ")
         chkpt = SCRIPT_DIR / "models" / f"ddqn_{ver}.chkpt"
         agent = Agent(
-            Env(turn_speed=0.15),
+            Env(turn_speed=0.1),
             action_dim=6,
             checkpoint=chkpt,
             device=device,

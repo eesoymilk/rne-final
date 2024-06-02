@@ -91,7 +91,7 @@ class Env:
         reset: bool = False,
     ) -> SocketResponse:
         jsonStr = json.dumps(
-            {'leftMotor': left_value, 'rightMotor': right_value, 'reset': reset}
+            {'leftMotor': left_value, 'rightMotor': right_value, 'reset': reset} #'flag': flag} 
         )
         self.command_ws.send(jsonStr)
         return self.read_socket()

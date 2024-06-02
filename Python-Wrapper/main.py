@@ -16,7 +16,7 @@ def main() -> None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print("[Device]:", device)
 
-        save_dir = SCRIPT_DIR / "checkpoints" / f"{datetime.now():%m%d%H%M}"
+        save_dir = SCRIPT_DIR / "checkpoints" / f"{datetime.now():%m%d%H%M}_turbo"
         chkpt = None #SCRIPT_DIR / "models" / "ddqn_1070k.chkpt"
         save_dir.mkdir(parents=True, exist_ok=True)
 

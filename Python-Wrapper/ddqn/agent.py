@@ -321,8 +321,8 @@ class Agent(BaseAgent):
                 qs.append(q)
                 losses.append(loss)
 
-            if done and episode_steps > 2:
-                # if done in less than 2 step, it's probably a bug
+            if done and episode_steps > 15:
+                # if done in less than 2 step, it's probably a bug ## update to 15
                 msg = [
                     f"============ Episode {episode + 1} ============",
                     f"Steps: {current_step}",
@@ -360,8 +360,8 @@ class Agent(BaseAgent):
                 episode_steps += 1
                 episode_reward += reward
 
-                if done and episode_steps > 2:
-                    # if done in less than 2 step, it's probably a bug
+                if done and episode_steps > 15:
+                    # if done in less than 2 step, it's probably a bug ## update to 15
                     break
 
                 obs = next_obs

@@ -37,13 +37,15 @@ class Env:
                 "name": "forward",
                 "motor_speed": (forward_speed, forward_speed),
             },
-            1: {"name": "left", "motor_speed": (-turn_speed, turn_speed)},
-            2: {"name": "right", "motor_speed": (turn_speed, -turn_speed)},
+            1: {"name": "left", "motor_speed": (0, turn_speed)},
+            2: {"name": "right", "motor_speed": (turn_speed, 0)},
             3: {
                 "name": "backward",
                 "motor_speed": (-0.2, -0.2),
             },
-            4: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
+            4: {"name": "sharp_left", "motor_speed": (-0.7* turn_speed, 0.7* turn_speed)},
+            5: {"name": "sharp_right", "motor_speed": (0.7* turn_speed, -0.7* turn_speed)}
+            #6: {"name": "stop", "motor_speed": (0, 0)},  # Deprecated
         }
 
         self.reset()
@@ -89,7 +91,7 @@ class Env:
         reset: bool = False,
     ) -> SocketResponse:
         jsonStr = json.dumps(
-            {'leftMotor': left_value, 'rightMotor': right_value, 'reset': reset}
+            {'leftMotor': left_value, 'rightMotor': right_value, 'reset': reset} #'flag': flag} 
         )
         self.command_ws.send(jsonStr)
         return self.read_socket()

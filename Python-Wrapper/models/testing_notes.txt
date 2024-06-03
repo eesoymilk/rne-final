@@ -1,0 +1,3 @@
+30_turbo trained on TURBO CPU mode on i9-12900H; okay but inconsistent performance when evaluated in TURBO mode
+60_turbo trained on TURBO CPU mode on i9-12900H; best performance when evaluated in TURBO mode and very good performance in SILENT mode
+35~39 trained on SILENT CPU mode on i9-12900H; mid performance when evaluated in TURBO mode

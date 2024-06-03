@@ -5,7 +5,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(SCRIPT_DIR.parent))
 
 import cv2
-import torch
+import torch, pickle
 from torch import Tensor
 import numpy as np
 import numpy.typing as npt
@@ -345,10 +345,12 @@ class Agent(BaseAgent):
                 obs = next_obs
 
     def eval(self, n_episode: int = 10):
+        print("[Start]")
         rewards = []
         for episode in range(n_episode):
             episode_steps, episode_reward = 0, 0
-            obs, _, _ = self.env.reset()
+            obs, __, _ = self.env.reset()
+            # print(__, _)
             obs = self.preprocess(obs)
             while True:
                 action = self.get_action(obs)
@@ -374,6 +376,13 @@ class Agent(BaseAgent):
 
         print(f"Average Reward: {np.mean(rewards):.6f}")
 
+    def save_replay(self):
+        try:
+            with open(f'{self.save_dir}/replay_buffer.pkl', 'wb') as f:
+                pickle.dump(self.memory, f)
+        except:
+            print("Could not save replay buffer.")
+            
     def save(self, verbose: bool = False):
         if self.save_dir is None:
             print("Save directory not provided. Model not saved.")
@@ -396,10 +405,9 @@ class Agent(BaseAgent):
         if verbose:
             print(f"DDQN saved to {save_path} at step {self.curr_step}")
 
-    def load(self, load_path: Path):
+    def load(self, load_path: Path, replay_path = None):
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
-
         print(f"Loading model at {load_path}...")
 
         ckp: dict = torch.load(load_path, map_location=self.device)
@@ -416,6 +424,16 @@ class Agent(BaseAgent):
         print(
             f"Model loaded successfully from {load_path} with exploration rate {exploration_rate}"
         )
+
+        try:
+            if(replay_path is None):
+                return
+            print(f"Loading replay buffer at {replay_path}...")
+            with open(replay_path, "rb") as f:
+                self.memory = pickle.load(f)
+                print("Replay buffer loaded successfully.")
+        except:
+            print("Recall buffer could not be loaded. Training without past experiences.")
 
 
 class HumanAgent(BaseAgent):

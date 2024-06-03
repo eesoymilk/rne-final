@@ -15,10 +15,11 @@ def main() -> None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print("[Device]:", device)
 
-        chkpt = SCRIPT_DIR / "models" / "ddqn_16.chkpt"
+        ver = input("version of model? ")
+        chkpt = SCRIPT_DIR / "models" / f"ddqn_{ver}.chkpt"
         agent = Agent(
-            Env(turn_speed=0.15),
-            action_dim=4,
+            Env(turn_speed=0.15 if input("This model was trained on 0.1 turn rate. Do you want to increase it for eval?\nThis is recommended for models with version values under 35. (y/n): ").lower() == "y" else 0.1),
+            action_dim=6,
             checkpoint=chkpt,
             device=device,
         )

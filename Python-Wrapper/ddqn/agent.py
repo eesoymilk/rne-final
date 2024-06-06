@@ -300,6 +300,8 @@ class Agent(BaseAgent):
         for current_step in range(n_steps):
             action = self.get_action(obs)
             next_obs, reward, done = self.env.step(action)
+            if(done):
+                print(f"done at {episode_steps}")
             next_obs = self.preprocess(next_obs)
 
             episode_steps += 1
@@ -324,8 +326,8 @@ class Agent(BaseAgent):
                 qs.append(q)
                 losses.append(loss)
 
-            if done and episode_steps > 40:
-                # if done in less than 2 step, it's probably a bug ## update to 40
+            if done and episode_steps > 2:
+                # if done in less than 2 step, it's probably a bug ## update to 30
                 msg = [
                     f"============ Episode {episode + 1} ============",
                     f"Steps: {current_step}",

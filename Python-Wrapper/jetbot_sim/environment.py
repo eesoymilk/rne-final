@@ -94,6 +94,7 @@ class Env:
             {'leftMotor': left_value, 'rightMotor': right_value, 'reset': reset, 'flag': 0 if reset else 4} 
         )
         self.command_ws.send(jsonStr)
+        print(f"\t\tsent: {jsonStr}")
         return self.read_socket()
 
     def set_motor(self, value_l, value_r) -> SocketResponse:

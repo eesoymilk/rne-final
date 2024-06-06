@@ -11,6 +11,7 @@ import numpy as np
 import numpy.typing as npt
 import abc
 from typing import Optional
+from collections import deque
 
 try:
     from utils.kbhit import KBHit
@@ -112,7 +113,7 @@ class Agent(BaseAgent):
         self.action_dim = action_dim
         self.batch_size = batch_size
         self.memory = ReplayBuffer(
-            obs_dim=(3, *self.processed_dim),
+            obs_dim=(12, *self.processed_dim),
             capacity=memory_size,
             batch_size=batch_size,
         )
@@ -293,11 +294,18 @@ class Agent(BaseAgent):
         qs, losses = [], []
         obs, _, _ = self.env.reset()
         obs = self.preprocess(obs)
+        frames = deque(maxlen=4)
+        for _ in range(4):
+            frames.append(obs)
+        obs = np.concatenate(frames, axis=0)
 
         for current_step in range(n_steps):
             action = self.get_action(obs)
             next_obs, reward, done = self.env.step(action)
             next_obs = self.preprocess(next_obs)
+            frames.append(next_obs)
+            next_obs = np.concatenate(frames, axis=0)
+            # print("obs:", obs.shape, "next_obs:", next_obs.shape)
 
             episode_steps += 1
 
@@ -341,6 +349,9 @@ class Agent(BaseAgent):
 
                 obs, _, _ = self.env.reset()
                 obs = self.preprocess(obs)
+                for _ in range(4):
+                    frames.append(obs)
+                obs = np.concatenate(frames, axis=0)
             else:
                 obs = next_obs
 

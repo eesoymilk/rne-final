@@ -47,7 +47,7 @@ class JetbotDDQN(nn.Module):
 
     def __build_cnns(self):
         return nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=8, stride=4),
+            nn.Conv2d(12, 32, kernel_size=8, stride=4), # stack 4 frames
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),

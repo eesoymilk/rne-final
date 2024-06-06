@@ -324,8 +324,8 @@ class Agent(BaseAgent):
                 qs.append(q)
                 losses.append(loss)
 
-            if done and episode_steps > 20:
-                # if done in less than 2 step, it's probably a bug ## update to 20
+            if done and episode_steps > 40:
+                # if done in less than 2 step, it's probably a bug ## update to 40
                 msg = [
                     f"============ Episode {episode + 1} ============",
                     f"Steps: {current_step}",

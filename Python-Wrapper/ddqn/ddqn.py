@@ -16,10 +16,12 @@ class JetbotDDQN(nn.Module):
         self.hidden_dim = hidden_dim
 
         self.cnns = self.__build_cnns()
+        self.lstm = self.__build_lstm()
         self.val_stream = self.__build_value_stream()
         self.adv_stream = self.__build_advantage_stream(output_dim)
 
         self.tgt_cnns = deepcopy(self.cnns)
+        self.tgt_lstm = deepcopy(self.lstm)
         self.tgt_val_stream = deepcopy(self.val_stream)
         self.tgt_adv_stream = deepcopy(self.adv_stream)
 
@@ -29,19 +31,28 @@ class JetbotDDQN(nn.Module):
     def forward(self, obs: torch.Tensor, model: Literal["online", "target"]):
         if model == "online":
             obs = self.cnns(obs)
-            val: torch.Tensor = self.val_stream(obs)
-            adv: torch.Tensor = self.adv_stream(obs)
+            # print(f"{obs.shape=}")
+            lstm_out, _ = self.lstm(obs)
+            # print(f"{lstm_out.shape=}")
+            val: torch.Tensor = self.val_stream(lstm_out)
+            adv: torch.Tensor = self.adv_stream(lstm_out)
         elif model == "target":
             obs = self.tgt_cnns(obs)
-            val: torch.Tensor = self.tgt_val_stream(obs)
-            adv: torch.Tensor = self.tgt_adv_stream(obs)
+            # print(f"{obs.shape=}")
+            lstm_out, _ = self.tgt_lstm(obs)
+            # print(f"{lstm_out.shape=}")
+            val: torch.Tensor = self.tgt_val_stream(lstm_out)
+            adv: torch.Tensor = self.tgt_adv_stream(lstm_out)
         else:
             raise ValueError(f"model: {model} not recognized")
 
-        return val + adv - adv.mean()
+        result = val + adv - adv.mean()
+        # print(f"{result.shape=}")
+        return result
 
     def sync(self):
         self.tgt_cnns.load_state_dict(self.cnns.state_dict())
+        self.tgt_lstm.load_state_dict(self.lstm.state_dict())
         self.tgt_val_stream.load_state_dict(self.val_stream.state_dict())
         self.tgt_adv_stream.load_state_dict(self.adv_stream.state_dict())
 
@@ -55,6 +66,9 @@ class JetbotDDQN(nn.Module):
             nn.ReLU(),
             nn.Flatten(),
         )
+
+    def __build_lstm(self):
+        return nn.LSTM(3136, 3136, batch_first=True)
 
     def __build_value_stream(self):
         return nn.Sequential(

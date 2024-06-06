@@ -59,3 +59,23 @@ class ReplayBuffer:
 
     def __len__(self):
         return min(self._count, self.capacity)
+
+    def save(self, path: str):
+        np.savez_compressed(
+            path,
+            observations=self.observations,
+            next_observations=self.next_observations,
+            actions=self.actions,
+            rewards=self.rewards,
+            dones=self.dones,
+            count=self._count,
+        )
+
+    def load(self, path: str):
+        data = np.load(path)
+        self.observations = data["observations"]
+        self.next_observations = data["next_observations"]
+        self.actions = data["actions"]
+        self.rewards = data["rewards"]
+        self.dones = data["dones"]
+        self._count = int(data["count"])

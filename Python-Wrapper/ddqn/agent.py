@@ -378,10 +378,10 @@ class Agent(BaseAgent):
 
     def save_replay(self):
         try:
-            with open(f'{self.save_dir}/replay_buffer.pkl', 'wb') as f:
-                pickle.dump(self.memory, f)
-        except:
+            self.memory.save(self.save_dir / "replay_buffer.npz")
+        except Exception as e:
             print("Could not save replay buffer.")
+            print(e)
             
     def save(self, verbose: bool = False):
         if self.save_dir is None:
@@ -426,12 +426,11 @@ class Agent(BaseAgent):
         )
 
         try:
-            if(replay_path is None):
-                return
+            if replay_path is None:
+                raise ValueError("Replay buffer path not provided.")
             print(f"Loading replay buffer at {replay_path}...")
-            with open(replay_path, "rb") as f:
-                self.memory = pickle.load(f)
-                print("Replay buffer loaded successfully.")
+            self.memory.load(replay_path)
+            print("Replay buffer loaded successfully.")
         except:
             print("Recall buffer could not be loaded. Training without past experiences.")
 

@@ -48,13 +48,14 @@ class JetbotDDQN(nn.Module):
     def __build_cnns(self):
         return nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=8, stride=4),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Flatten(),
-        )
+            nn.LSTM(3136, hidden_size=self.hidden_dim, num_layers=2),
+        )[0]
 
     def __build_value_stream(self):
         return nn.Sequential(

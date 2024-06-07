@@ -16,14 +16,14 @@ def main() -> None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print("[Device]:", device)
 
-        save_dir = SCRIPT_DIR / "checkpoints" / f"{datetime.now():%m%d%H%M}{"_turbo" if input("Turbo mode on? (y/n): ").lower() == "y" else ""}"
+        save_dir = SCRIPT_DIR / "checkpoints" / f'{datetime.now():%m%d%H%M}{"_turbo" if input("Turbo mode on? (y/n): ").lower() == "y" else ""}'
         chkpt = None #SCRIPT_DIR / "models" / "ddqn_1070k.chkpt"
         save_dir.mkdir(parents=True, exist_ok=True)
 
         agent = Agent(
             Env(),
             action_dim=6,
-            memory_size=1_000_000,
+            memory_size=250_000,
             batch_size=1024,
             save_dir=save_dir,
             checkpoint=chkpt,

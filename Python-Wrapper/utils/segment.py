@@ -14,8 +14,8 @@ def segment(img: npt.NDArray, one_hot: bool = True) -> npt.NDArray:
     # Apply the conditions to assign the segmentation labels
     result[(red - 5 > green) & (red - 5 > blue)] = 2
     result[blue > 200] = 0
-    random_point = 300
-    result[0:25, :] = 0
+    random_point = 250
+    result[0:20, :] = 0
     for i in range(3):
         for _ in range(random_point):
             x = np.random.randint(0, result.shape[0])

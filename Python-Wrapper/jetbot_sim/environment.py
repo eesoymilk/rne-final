@@ -73,7 +73,7 @@ class Env:
                 nparr = np.fromstring(self.buffer[5:], np.uint8)
                 img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                 reward = int.from_bytes(self.buffer[:4], 'little', signed=True)
-                done = bool.from_bytes(self.buffer[4:5], 'little')
+                done = bool.from_bytes(self.buffer[4:5], 'little') or reward == -5
                 self.on_change = False
                 self.buffer = None
                 return img.copy(), reward, done

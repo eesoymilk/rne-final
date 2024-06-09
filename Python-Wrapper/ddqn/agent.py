@@ -101,7 +101,7 @@ class Agent(BaseAgent):
         exploration_rate: float = 1.0,
         exploration_rate_decay: int = 0.99995,
         exploration_rate_min: float = 0.1,
-        no_reward_panelty: int = 1,
+        no_reward_penalty: int = 1,
         no_reward_tolerance: int = 30,
         no_reward_limit: int = 40,
         device: Optional[str] = None,
@@ -129,7 +129,7 @@ class Agent(BaseAgent):
         self.sync_interval = sync_interval
         self.save_interval = save_interval
         self.no_reward_tolerance = no_reward_tolerance
-        self.no_reward_panelty = no_reward_panelty
+        self.no_reward_penalty = no_reward_penalty
         self.no_reward_limit = no_reward_limit
         self.save_dir = save_dir
 
@@ -301,11 +301,11 @@ class Agent(BaseAgent):
 
             episode_steps += 1
 
-            if reward == 0:
+            if reward <= 0:
                 no_reward_steps += 1
 
                 if no_reward_steps > self.no_reward_tolerance:
-                    reward = -self.no_reward_panelty
+                    reward = -self.no_reward_penalty
 
                 if no_reward_steps > self.no_reward_limit:
                     done = True

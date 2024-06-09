@@ -299,7 +299,14 @@ class Agent(BaseAgent):
             next_obs, reward, done = self.env.step(action)
             next_obs = self.preprocess(next_obs)
 
+            if(done and episode_steps < 15):
+                reward = 0
+                done = False
+
             episode_steps += 1
+            # print(f"\t\tagent reward: {reward}, done {done}")
+            # if(reward < 0):
+                # print(f"\tagent penalized with {reward}")
 
             if reward <= 0:
                 no_reward_steps += 1
@@ -322,12 +329,14 @@ class Agent(BaseAgent):
                 losses.append(loss)
 
             if done and episode_steps > 15:
+                print(f"\tFailed with penalty {reward}")
                 # if done in less than 2 step, it's probably a bug ## update to 15
                 msg = [
                     f"============ Episode {episode + 1} ============",
                     f"Steps: {current_step}",
                     f"Episode Steps: {episode_steps}",
                     f"Reward: {episode_reward}",
+                    # f'Fail reason: {"OUT OF BOUNDS" if reward <= -10 else "HIT OBSTACLE"}'
                 ]
                 if qs and losses:
                     msg.append(f"Average Q: {np.mean(qs):.6f}")
@@ -390,11 +399,12 @@ class Agent(BaseAgent):
 
         save_path = (
             self.save_dir
-            / f"ddqn_{int(self.curr_step // self.save_interval)}.chkpt"
+            / f"ddqn_{int(self.curr_step // self.save_interval)}_LSTM.chkpt"
         )
         torch.save(
             dict(
                 cnns=self.net.cnns.state_dict(),
+                LSTM=self.net.LSTM.state_dict(),
                 value_stream=self.net.val_stream.state_dict(),
                 advantage_stream=self.net.adv_stream.state_dict(),
                 exploration_rate=self.exploration_rate,
@@ -413,9 +423,11 @@ class Agent(BaseAgent):
         ckp: dict = torch.load(load_path, map_location=self.device)
         exploration_rate = ckp.get("exploration_rate")
         cnns = ckp.get("cnns")
+        lstm = ckp.get("LSTM")
         val_stream = ckp.get("value_stream")
         adv_stream = ckp.get("advantage_stream")
         self.net.cnns.load_state_dict(cnns)
+        self.net.LSTM.load_state_dict(lstm)
         self.net.val_stream.load_state_dict(val_stream)
         self.net.adv_stream.load_state_dict(adv_stream)
         self.net.sync()

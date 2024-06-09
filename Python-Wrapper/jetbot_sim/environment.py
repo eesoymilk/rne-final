@@ -73,9 +73,12 @@ class Env:
                 nparr = np.fromstring(self.buffer[5:], np.uint8)
                 img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                 reward = int.from_bytes(self.buffer[:4], 'little', signed=True)
-                done = bool.from_bytes(self.buffer[4:5], 'little') or reward == -5
+                done = bool.from_bytes(self.buffer[4:5], 'little')
                 self.on_change = False
                 self.buffer = None
+                if(done):
+                    reward = min(-10, reward-10)
+                # print(f"\t\treward: {reward}, done: {done}")
                 return img.copy(), reward, done
 
     def _move_to_wheel(self, value: float) -> float:
@@ -93,6 +96,8 @@ class Env:
         jsonStr = json.dumps(
             {'leftMotor': left_value, 'rightMotor': right_value, 'reset': reset, 'flag': 0 if reset else 4} 
         )
+        if(reset):
+            print("\tEpisode over, reset env")
         self.command_ws.send(jsonStr)
         return self.read_socket()
 

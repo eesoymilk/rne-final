@@ -16,10 +16,12 @@ class JetbotDDQN(nn.Module):
         self.hidden_dim = hidden_dim
 
         self.cnns = self.__build_cnns()
+        self.LSTM = self.__build_LSTM()
         self.val_stream = self.__build_value_stream()
         self.adv_stream = self.__build_advantage_stream(output_dim)
 
         self.tgt_cnns = deepcopy(self.cnns)
+        self.tgt_LSTM = deepcopy(self.LSTM)
         self.tgt_val_stream = deepcopy(self.val_stream)
         self.tgt_adv_stream = deepcopy(self.adv_stream)
 
@@ -29,12 +31,22 @@ class JetbotDDQN(nn.Module):
     def forward(self, obs: torch.Tensor, model: Literal["online", "target"]):
         if model == "online":
             obs = self.cnns(obs)
+            # print("done forward through CNN, online")
+            obs, _ = self.LSTM(obs)
+            # print("done forward through LSTM, online")
             val: torch.Tensor = self.val_stream(obs)
+            # print("done forward through val, online")
             adv: torch.Tensor = self.adv_stream(obs)
+            # print("done forward through adv, online")
         elif model == "target":
             obs = self.tgt_cnns(obs)
+            # print("done forward through CNN, tgt")
+            obs, _ = self.tgt_LSTM(obs)
+            # print("done forward through LSTM, tgt")
             val: torch.Tensor = self.tgt_val_stream(obs)
+            # print("done forward through val, tgt")
             adv: torch.Tensor = self.tgt_adv_stream(obs)
+            # print("done forward through adv, tgt")
         else:
             raise ValueError(f"model: {model} not recognized")
 
@@ -55,17 +67,20 @@ class JetbotDDQN(nn.Module):
             nn.ReLU(),
             nn.Flatten(),
         )
+    
+    def __build_LSTM(self):
+            return nn.LSTM(3136, 256, num_layers=2, batch_first=True)
 
     def __build_value_stream(self):
         return nn.Sequential(
-            nn.Linear(3136, self.hidden_dim),
+            nn.Linear(256, self.hidden_dim),
             nn.ReLU(),
             nn.Linear(self.hidden_dim, 1),
         )
 
     def __build_advantage_stream(self, output_dim: int):
         return nn.Sequential(
-            nn.Linear(3136, self.hidden_dim),
+            nn.Linear(256, self.hidden_dim),
             nn.ReLU(),
             nn.Linear(self.hidden_dim, output_dim),
         )

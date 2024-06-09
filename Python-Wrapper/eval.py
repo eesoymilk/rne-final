@@ -22,7 +22,7 @@ def main() -> None:
             action_dim=6,
             checkpoint=chkpt,
             device=device,
-            memory_size=500_000,
+            memory_size=750_000,
         )
         agent.eval(10)
     except KeyboardInterrupt:

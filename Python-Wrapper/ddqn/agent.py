@@ -103,7 +103,7 @@ class Agent(BaseAgent):
         exploration_rate_min: float = 0.1,
         no_reward_penalty: int = 1,
         no_reward_tolerance: int = 30,
-        no_reward_limit: int = 40,
+        no_reward_limit: int = 50,
         device: Optional[str] = None,
         save_dir: Optional[Path] = None,
         checkpoint: Optional[Path] = None,
@@ -298,8 +298,10 @@ class Agent(BaseAgent):
             action = self.get_action(obs)
             next_obs, reward, done = self.env.step(action)
             next_obs = self.preprocess(next_obs)
+            # print(done, reward)
 
             if(done and episode_steps < 15):
+                # print("not really done")
                 reward = 0
                 done = False
 
@@ -308,15 +310,18 @@ class Agent(BaseAgent):
             # if(reward < 0):
                 # print(f"\tagent penalized with {reward}")
 
-            if reward <= 0:
+            if reward <= 0 and (done == False):
                 no_reward_steps += 1
 
                 if no_reward_steps > self.no_reward_tolerance:
+                    # print("triggered no reward penalty")
                     reward = -self.no_reward_penalty
 
                 if no_reward_steps > self.no_reward_limit:
+                    print("no reward expiration")
+                    reward -= 10
                     done = True
-            else:
+            elif done == False:
                 no_reward_steps = 0
 
             self.cache(obs, next_obs, action, reward, done)

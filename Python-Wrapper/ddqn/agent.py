@@ -237,14 +237,17 @@ class Agent(BaseAgent):
     def td_estimate(self, obs: Tensor, action: Tensor):
         # Q_online(s,a)
         obs = obs.float()
-        current_Q: Tensor = self.net(obs, model="online")[
-            np.arange(0, self.batch_size), action
-        ]
+        # print("obs shape", obs.shape)
+        current_out: Tensor = self.net(obs, model="online")
+        # print("current_out shape", current_out.shape)
+        current_Q = current_out[np.arange(0, self.batch_size), action]
+        # print("current_Q shape", current_Q.shape)
         return current_Q
 
     @torch.no_grad()
     def td_target(self, reward: Tensor, next_obs: Tensor, done: Tensor):
         next_obs = next_obs.float()
+        #
         next_obs_Q: Tensor = self.net(next_obs, model="online")
         best_action: Tensor = torch.argmax(next_obs_Q, axis=1)
         next_Q: Tensor = self.net(next_obs, model="target")[
@@ -297,6 +300,8 @@ class Agent(BaseAgent):
         for current_step in range(n_steps):
             action = self.get_action(obs)
             next_obs, reward, done = self.env.step(action)
+            if(done):
+                print(f"done at {episode_steps}")
             next_obs = self.preprocess(next_obs)
             # print(done, reward)
 
@@ -336,6 +341,7 @@ class Agent(BaseAgent):
             if done and episode_steps > 15:
                 print(f"\tFailed with penalty {reward}")
                 # if done in less than 2 step, it's probably a bug ## update to 15
+
                 msg = [
                     f"============ Episode {episode + 1} ============",
                     f"Steps: {current_step}",
@@ -374,8 +380,8 @@ class Agent(BaseAgent):
                 episode_steps += 1
                 episode_reward += reward
 
-                if done and episode_steps > 15:
-                    # if done in less than 2 step, it's probably a bug ## update to 15
+                if done and episode_reward > 15:
+                    # if done in less than 2 step, it's probably a bug ## update to reward 15
                     break
 
                 obs = next_obs
@@ -396,7 +402,7 @@ class Agent(BaseAgent):
                 pickle.dump(self.memory, f)
         except:
             print("Could not save replay buffer.")
-            
+
     def save(self, verbose: bool = False):
         if self.save_dir is None:
             print("Save directory not provided. Model not saved.")
@@ -420,37 +426,47 @@ class Agent(BaseAgent):
         if verbose:
             print(f"DDQN saved to {save_path} at step {self.curr_step}")
 
-    def load(self, load_path: Path, replay_path = None):
+    def load(
+        self, load_path: Path, replay_path=None, exploration_rate: float = None
+    ):
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
         print(f"Loading model at {load_path}...")
 
         ckp: dict = torch.load(load_path, map_location=self.device)
-        exploration_rate = ckp.get("exploration_rate")
+        exploration_rate_loaded = ckp.get("exploration_rate")
         cnns = ckp.get("cnns")
+
         lstm = ckp.get("LSTM")
         val_stream = ckp.get("value_stream")
         adv_stream = ckp.get("advantage_stream")
         self.net.cnns.load_state_dict(cnns)
         self.net.LSTM.load_state_dict(lstm)
+
         self.net.val_stream.load_state_dict(val_stream)
         self.net.adv_stream.load_state_dict(adv_stream)
         self.net.sync()
-        self.exploration_rate = exploration_rate
+        self.exploration_rate = (
+            exploration_rate
+            if exploration_rate is not None
+            else exploration_rate_loaded
+        )
 
         print(
             f"Model loaded successfully from {load_path} with exploration rate {exploration_rate}"
         )
 
         try:
-            if(replay_path is None):
+            if replay_path is None:
                 return
             print(f"Loading replay buffer at {replay_path}...")
             with open(replay_path, "rb") as f:
                 self.memory = pickle.load(f)
                 print("Replay buffer loaded successfully.")
         except:
-            print("Recall buffer could not be loaded. Training without past experiences.")
+            print(
+                "Recall buffer could not be loaded. Training without past experiences."
+            )
 
 
 class HumanAgent(BaseAgent):

@@ -99,6 +99,7 @@ class Env:
         if(reset):
             print("\tEpisode over, reset env")
         self.command_ws.send(jsonStr)
+        print(f"\t\tsent: {jsonStr}")
         return self.read_socket()
 
     def set_motor(self, value_l, value_r) -> SocketResponse:

@@ -47,13 +47,17 @@ class JetbotDDQN(nn.Module):
             # print("done forward through val, tgt")
             adv: torch.Tensor = self.tgt_adv_stream(obs)
             # print("done forward through adv, tgt")
+
         else:
             raise ValueError(f"model: {model} not recognized")
 
-        return val + adv - adv.mean()
+        result = val + adv - adv.mean()
+        # print(f"{result.shape=}")
+        return result
 
     def sync(self):
         self.tgt_cnns.load_state_dict(self.cnns.state_dict())
+        self.tgt_lstm.load_state_dict(self.lstm.state_dict())
         self.tgt_val_stream.load_state_dict(self.val_stream.state_dict())
         self.tgt_adv_stream.load_state_dict(self.adv_stream.state_dict())
 
@@ -70,6 +74,9 @@ class JetbotDDQN(nn.Module):
     
     def __build_LSTM(self):
             return nn.LSTM(3136, 256, num_layers=2, batch_first=True)
+
+    def __build_lstm(self):
+        return nn.LSTM(3136, 3136, batch_first=True)
 
     def __build_value_stream(self):
         return nn.Sequential(

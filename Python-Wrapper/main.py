@@ -18,6 +18,7 @@ def main() -> None:
 
         save_dir = SCRIPT_DIR / "checkpoints" / f'{datetime.now():%m%d%H%M}{"_turbo" if input("Turbo mode on? (y/n): ").lower() == "y" else ""}'
         chkpt = None #SCRIPT_DIR / "models" / "ddqn_1070k.chkpt"
+
         save_dir.mkdir(parents=True, exist_ok=True)
 
         agent = Agent(
@@ -33,7 +34,7 @@ def main() -> None:
         agent.train()
     except KeyboardInterrupt:
         agent.save()
-        if(input("Save replay buffer? (y/n): ").lower() == "y"):
+        if input("Save replay buffer? (y/n): ").lower() == "y":
             agent.save_replay()
         print("\n[Interrupted]")
     finally:
